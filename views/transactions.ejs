@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Transactions</span></div>
+        <h2>Transaction Ledger</h2>
+        <p>Complete record of all evaluated transactions with full audit trail</p>
+      </div>
+      <div><span id="txnCount" style="color:#b0bfd4;font-size:14px;">0 transactions recorded</span></div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <!-- Filter bar -->
+    <div class="card mb-20">
+      <div class="card-body" style="padding:14px 20px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <label class="form-label" style="margin-bottom:3px;">Risk Level</label>
+            <select class="form-control" style="width:160px;" id="txnRiskFilter" onchange="renderTxnTable()">
+              <option value="all">All Levels</option>
+              <option value="safe">Safe</option>
+              <option value="moderate">Moderate</option>
+              <option value="high">High Risk</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:3px;">Status</label>
+            <select class="form-control" style="width:160px;" id="txnStatusFilter" onchange="renderTxnTable()">
+              <option value="all">All Statuses</option>
+              <option value="approved">Approved</option>
+              <option value="blocked">Blocked</option>
+              <option value="monitoring">Monitoring</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div style="margin-top:18px;">
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:0;overflow-x:auto;">
+        <table class="gov-table" id="txnTable">
+          <thead>
+            <tr>
+              <th>Ref No.</th><th>Date/Time</th><th>Customer</th><th>Type</th>
+              <th>Amount (₵)</th><th>Recipient</th><th>Device</th><th>Location</th>
+              <th>Risk Score</th><th>Risk Level</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="txnBody">
+            <tr><td colspan="12" style="text-align:center;color:var(--gov-muted);padding:40px;">No transactions recorded. Activate the engine to begin monitoring.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PFIS — Predictive Fraud Intelligence System</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+<!-- FLAG STRIP -->
+<link rel="stylesheet" href="/css/style.css"/>
+<div class="flag-strip"></div>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  <div class="top-banner-inner">
+    <span>Official Website — Republic of Ghana · Financial Intelligence Centre</span>
+    <div>
+      <a href="/accessibility">Accessibility</a>
+      <a href="/contact">Contact</a>
+      <a href="/help">Help Centre</a>
+      <a href="/login" id="loginLink">Officer Login</a>
+    </div>
+  </div>
+</div>
+
+<!-- SITE HEADER -->
+<div class="site-header">
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="coat-of-arms">🦅</div>
+      <div class="agency-name">
+        <h1>Predictive Fraud Intelligence System</h1>
+        <p>Financial Intelligence Centre · Republic of Ghana</p>
+      </div>
+    </div>
+    <div class="flex gap-12" style="align-items:center;">
+      <div class="engine-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Engine Offline</span>
+      </div>
+      <button class="start-btn" id="engineBtn" onclick="toggleEngine()">▶ Activate Engine</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-item">🏛 Dashboard</a>
+    <a href="/monitor" class="nav-item">📡 Live Monitor</a>
+    <a href="/transactions" class="nav-item">📋 Transactions</a>
+    <a href="/profiles" class="nav-item">👤 User Profiles</a>
+    <a href="/investigations" class="nav-item">🔍 Investigations <span class="nav-badge" id="invBadge">0</span></a>
+    <a href="/reports" class="nav-item">📊 Reports &amp; Analytics</a>
+    <a href="/settings" class="nav-item">⚙ System Settings</a>
+    <a href="/about" class="nav-item">ℹ About PFIS</a>
+  </div>
+</nav>
+
+<!-- LIVE TICKER -->
+<div class="live-ticker">
+  <div class="ticker-inner" id="tickerInner">
+    <span class="ticker-item">PFIS System Online · Monitoring Active · All channels nominal &nbsp;|&nbsp;</span>
+  </div>
+</div>

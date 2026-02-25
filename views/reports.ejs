@@ -1,0 +1,75 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Reports &amp; Analytics</span></div>
+        <h2>Reports &amp; Analytics</h2>
+        <p>Statistical summaries, trend analysis and performance metrics</p>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+
+    <div class="card mb-20">
+      <div class="card-header"><h3>Session Performance Summary</h3></div>
+      <div class="card-body">
+        <div class="grid-3" id="reportSummary">
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Transactions Processed</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--gov-navy);" id="rpt-total">0</div></div>
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Fraud Prevention Rate</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--safe-green);" id="rpt-rate">—</div></div>
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Total Value Protected</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--gov-navy);" id="rpt-saved">₵0.00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3>Fraud Type Breakdown</h3></div>
+        <div class="card-body" id="fraudTypeBreakdown">
+          <div class="text-muted text-small">No data available.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Risk by User Segment</h3></div>
+        <div class="card-body" id="riskBySegment">
+          <div class="text-muted text-small">No data available.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <div class="card-header"><h3>Hurdle Failure Frequency</h3><span class="card-meta">Which checks catch the most fraud</span></div>
+      <div class="card-body" id="hurdleStats">
+        <div class="text-muted text-small">No data available. Activate engine to collect statistics.</div>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <div class="card-header"><h3>Generate Official Report</h3></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Report Type</label>
+            <select class="form-control" id="rptType">
+              <option>Daily Transaction Summary</option>
+              <option>Fraud Incident Report</option>
+              <option>Investigation Status Report</option>
+              <option>Monthly Analytics Report</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Period</label>
+            <select class="form-control">
+              <option>Current Session</option>
+              <option>Today</option>
+              <option>This Week</option>
+              <option>This Month</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="generateReport()">Generate &amp; Download Report</button>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

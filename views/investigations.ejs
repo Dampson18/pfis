@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Investigations</span></div>
+        <h2>Fraud Investigation Queue</h2>
+        <p>Cases escalated for review by the Financial Intelligence Centre</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openReportModal()">+ File New Case</button>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="grid-2 mb-20">
+      <div class="stat-card red"><div class="label">Open Cases</div><div class="value" id="inv-open">0</div></div>
+      <div class="stat-card green"><div class="label">Resolved Cases</div><div class="value" id="inv-resolved">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Active Investigation Queue</h3></div>
+      <div class="card-body" style="padding:0;">
+        <table class="gov-table">
+          <thead><tr><th>Case No.</th><th>Transaction Ref</th><th>Suspect Account</th><th>Amount</th><th>Alert Reason</th><th>Escalated</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="invBody"><tr><td colspan="9" style="text-align:center;color:var(--gov-muted);padding:32px;">No cases in queue. High-risk transactions will appear here automatically.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,55 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Live Monitor</span></div>
+        <h2>Live Transaction Monitor</h2>
+        <p>Real-time feed of all transactions passing through PFIS evaluation</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-sm" onclick="clearMonitor()">Clear Feed</button>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="sidebar-layout">
+      <!-- Sidebar filters -->
+      <div>
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <h4>Filter by Risk</h4>
+            <a class="sidebar-link active" onclick="setMonFilter('all',this)">All Transactions</a>
+            <a class="sidebar-link" onclick="setMonFilter('safe',this)">✅ Safe Only</a>
+            <a class="sidebar-link" onclick="setMonFilter('moderate',this)">⚠ Moderate Risk</a>
+            <a class="sidebar-link" onclick="setMonFilter('high',this)">🚨 High Risk</a>
+          </div>
+          <div class="sidebar-section">
+            <h4>Filter by User Type</h4>
+            <a class="sidebar-link active-type" onclick="setTypeFilter('all',this)">All Users</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Trader',this)">Traders</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Student',this)">Students</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Worker',this)">Workers</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Merchant',this)">Merchants</a>
+          </div>
+          <div class="sidebar-section">
+            <h4>Live Counts</h4>
+            <div style="font-size:13px;">
+              <div class="flex-between mb-8"><span>Safe:</span><strong id="monC-safe">0</strong></div>
+              <div class="flex-between mb-8"><span>Moderate:</span><strong id="monC-mod">0</strong></div>
+              <div class="flex-between"><span>High Risk:</span><strong id="monC-high" style="color:var(--danger-red);">0</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div>
+        <div id="monitorFeed">
+          <div class="alert-strip info">Engine is offline. Activate the engine to begin live monitoring.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

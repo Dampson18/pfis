@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<!-- LEGACY SINGLE-PAGE VERSION: The project has been refactored to use an Express/EJS backend with separate pages under /views and static assets in /public. Update the new pages instead of editing this file. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PFIS — Predictive Fraud Intelligence System | Republic of Ghana</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --gh-red: #C8102E;
+  --gh-gold: #FCD116;
+  --gh-green: #006B3F;
+  --gh-black: #1a1a1a;
+  --gov-navy: #1B2A4A;
+  --gov-navy-light: #243559;
+  --gov-slate: #3D5275;
+  --gov-silver: #F4F6F8;
+  --gov-border: #CBD5E0;
+  --gov-text: #2D3748;
+  --gov-muted: #718096;
+  --safe-green: #276749;
+  --safe-bg: #F0FFF4;
+  --warn-amber: #B7791F;
+  --warn-bg: #FFFBEB;
+  --danger-red: #C53030;
+  --danger-bg: #FFF5F5;
+  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-sans: 'Source Sans 3', 'Gill Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:#EDEEF0;color:var(--gov-text);min-height:100vh;font-size:15px;}
+
+/* ─── TOP BANNER ─── */
+.top-banner{background:var(--gov-navy);color:#fff;font-size:12px;padding:5px 0;border-bottom:3px solid var(--gh-gold);}
+.top-banner-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;}
+.top-banner a{color:#aab8cc;text-decoration:none;margin-left:16px;font-size:11px;}
+.top-banner a:hover{color:#fff;}
+.flag-strip{height:4px;background:linear-gradient(to right, var(--gh-red) 33.33%, var(--gh-gold) 33.33%, var(--gh-gold) 66.66%, var(--gh-green) 66.66%);}
+
+/* ─── HEADER ─── */
+.site-header{background:#fff;border-bottom:1px solid var(--gov-border);box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.header-inner{max-width:1280px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.logo-block{display:flex;align-items:center;gap:14px;}
+.coat-of-arms{width:56px;height:56px;background:var(--gov-navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:2px solid var(--gh-gold);}
+.agency-name{line-height:1.25;}
+.agency-name h1{font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--gov-navy);letter-spacing:.3px;}
+.agency-name p{font-size:11px;color:var(--gov-muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.engine-status{display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--gov-border);border-radius:4px;background:var(--gov-silver);}
+.status-dot{width:9px;height:9px;border-radius:50%;background:#ccc;}
+.status-dot.active{background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.25);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.25);}50%{box-shadow:0 0 0 6px rgba(34,197,94,.1);}}
+.status-text{font-size:11px;font-weight:600;color:var(--gov-text);text-transform:uppercase;letter-spacing:.8px;}
+.start-btn{background:var(--gov-navy);color:#fff;border:none;padding:9px 22px;font-family:var(--font-sans);font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:background .2s;}
+.start-btn:hover{background:var(--gov-navy-light);}
+.start-btn.stop{background:var(--gh-red);}
+
+/* ─── NAV ─── */
+nav{background:var(--gov-navy);border-bottom:3px solid var(--gh-gold);}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;overflow-x:auto;}
+.nav-item{color:#b0bfd4;font-size:13px;font-weight:600;padding:13px 20px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .15s;letter-spacing:.3px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06);}
+.nav-item.active{color:#fff;border-bottom-color:var(--gh-gold);background:rgba(255,255,255,.08);}
+.nav-badge{background:var(--gh-red);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;font-weight:700;}
+
+/* ─── LAYOUT ─── */
+.page-wrapper{display:none;}
+.page-wrapper.active{display:block;}
+.container{max-width:1280px;margin:0 auto;padding:0 24px;}
+.page-content{padding:28px 0 60px;}
+
+/* ─── PAGE HEADER ─── */
+.page-header{background:var(--gov-navy);color:#fff;padding:28px 0 24px;margin-bottom:28px;border-bottom:3px solid var(--gh-gold);}
+.page-header .container{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;}
+.page-header h2{font-family:var(--font-serif);font-size:28px;font-weight:700;margin-bottom:4px;}
+.page-header p{color:#b0bfd4;font-size:14px;}
+.breadcrumb{font-size:12px;color:#7a92b0;margin-bottom:8px;}
+.breadcrumb span{color:#b0bfd4;}
+
+/* ─── STAT CARDS ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+.stat-card{background:#fff;border:1px solid var(--gov-border);border-top:3px solid var(--gov-navy);padding:18px 20px;border-radius:2px;}
+.stat-card.green{border-top-color:var(--safe-green);}
+.stat-card.amber{border-top-color:var(--warn-amber);}
+.stat-card.red{border-top-color:var(--danger-red);}
+.stat-card.gold{border-top-color:var(--gh-gold);}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);font-weight:600;margin-bottom:8px;}
+.stat-card .value{font-family:var(--font-serif);font-size:30px;font-weight:700;color:var(--gov-navy);line-height:1;}
+.stat-card .sub{font-size:11px;color:var(--gov-muted);margin-top:5px;}
+
+/* ─── CARDS & PANELS ─── */
+.card{background:#fff;border:1px solid var(--gov-border);border-radius:2px;margin-bottom:20px;}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--gov-border);display:flex;justify-content:space-between;align-items:center;}
+.card-header h3{font-family:var(--font-serif);font-size:18px;font-weight:700;color:var(--gov-navy);}
+.card-header .card-meta{font-size:12px;color:var(--gov-muted);}
+.card-body{padding:20px;}
+
+/* ─── TABLES ─── */
+.gov-table{width:100%;border-collapse:collapse;font-size:13px;}
+.gov-table th{background:var(--gov-silver);color:var(--gov-navy);font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;padding:10px 14px;border:1px solid var(--gov-border);text-align:left;}
+.gov-table td{padding:10px 14px;border:1px solid #e2e8f0;vertical-align:top;}
+.gov-table tr:nth-child(even) td{background:#f8fafc;}
+.gov-table tr:hover td{background:#EBF4FF;}
+
+/* ─── RISK BADGES ─── */
+.badge{display:inline-block;padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.badge-safe{background:var(--safe-bg);color:var(--safe-green);border:1px solid #9AE6B4;}
+.badge-moderate{background:var(--warn-bg);color:var(--warn-amber);border:1px solid #F6AD55;}
+.badge-high{background:var(--danger-bg);color:var(--danger-red);border:1px solid #FC8181;}
+.badge-navy{background:#EBF4FF;color:var(--gov-navy);border:1px solid #BEE3F8;}
+.badge-blocked{background:#1A202C;color:#fff;font-size:10px;}
+
+/* ─── HURDLE PANEL ─── */
+.hurdle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.hurdle-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--gov-border);border-radius:2px;background:var(--gov-silver);}
+.hurdle-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hurdle-dot.pass{background:#22C55E;}
+.hurdle-dot.fail{background:var(--danger-red);}
+.hurdle-label{font-size:12px;color:var(--gov-text);flex:1;}
+.hurdle-weight{font-size:11px;color:var(--gov-muted);}
+
+/* ─── SCORE GAUGE ─── */
+.gauge-wrap{display:flex;align-items:center;gap:20px;}
+.gauge-labels{flex:1;}
+.gauge-bar-bg{height:18px;background:#E2E8F0;border-radius:2px;overflow:hidden;margin-top:6px;}
+.gauge-bar{height:100%;transition:width .6s ease;}
+
+/* ─── ALERT STRIP ─── */
+.alert-strip{padding:12px 16px;border-radius:2px;margin-bottom:12px;border-left:4px solid;font-size:13px;}
+.alert-strip.danger{background:var(--danger-bg);border-color:var(--danger-red);color:#742A2A;}
+.alert-strip.warn{background:var(--warn-bg);border-color:var(--warn-amber);color:#744210;}
+.alert-strip.success{background:var(--safe-bg);border-color:var(--safe-green);color:#1C4532;}
+.alert-strip.info{background:#EBF4FF;border-color:#3182CE;color:#1A365D;}
+
+/* ─── FORMS ─── */
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gov-navy);margin-bottom:5px;}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--gov-border);border-radius:2px;font-family:var(--font-sans);font-size:14px;color:var(--gov-text);background:#fff;}
+.form-control:focus{outline:none;border-color:var(--gov-navy);box-shadow:0 0 0 2px rgba(27,42,74,.1);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-block;padding:9px 20px;border-radius:2px;font-family:var(--font-sans);font-size:13px;font-weight:700;cursor:pointer;border:none;letter-spacing:.3px;transition:all .15s;text-transform:uppercase;}
+.btn-primary{background:var(--gov-navy);color:#fff;}
+.btn-primary:hover{background:var(--gov-navy-light);}
+.btn-success{background:var(--safe-green);color:#fff;}
+.btn-success:hover{background:#1e5538;}
+.btn-danger{background:var(--danger-red);color:#fff;}
+.btn-danger:hover{background:#9b2c2c;}
+.btn-outline{background:#fff;color:var(--gov-navy);border:1px solid var(--gov-border);}
+.btn-outline:hover{background:var(--gov-silver);}
+.btn-sm{padding:5px 14px;font-size:11px;}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ─── TICKER ─── */
+.live-ticker{background:var(--gov-navy-light);color:#b0bfd4;font-size:11px;padding:7px 0;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.08);}
+.ticker-inner{display:flex;gap:36px;animation:ticker 30s linear infinite;white-space:nowrap;padding-left:100%;}
+@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ticker-item .risk-tag{font-weight:700;}
+.ticker-item .risk-tag.h{color:var(--gh-red);}
+.ticker-item .risk-tag.m{color:var(--gh-gold);}
+.ticker-item .risk-tag.s{color:#4ADE80;}
+
+/* ─── MODAL ─── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;border-top:4px solid var(--gov-navy);}
+.modal-header{padding:16px 24px;border-bottom:1px solid var(--gov-border);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{font-family:var(--font-serif);font-size:20px;color:var(--gov-navy);}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gov-muted);line-height:1;}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--gov-border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ─── SIDEBAR LAYOUT ─── */
+.sidebar-layout{display:grid;grid-template-columns:260px 1fr;gap:20px;}
+.sidebar{background:#fff;border:1px solid var(--gov-border);border-radius:2px;height:fit-content;}
+.sidebar-section{padding:14px 16px;border-bottom:1px solid var(--gov-border);}
+.sidebar-section:last-child{border-bottom:none;}
+.sidebar-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;color:var(--gov-muted);margin-bottom:10px;}
+.sidebar-link{display:block;padding:7px 10px;font-size:13px;color:var(--gov-text);cursor:pointer;border-radius:2px;margin-bottom:2px;}
+.sidebar-link:hover{background:var(--gov-silver);}
+.sidebar-link.active{background:#EBF4FF;color:var(--gov-navy);font-weight:600;}
+
+/* ─── CHARTS ─── */
+.mini-chart{height:80px;}
+.bar-chart-wrap{display:flex;align-items:flex-end;gap:4px;height:80px;}
+.bar{flex:1;background:var(--gov-navy);border-radius:2px 2px 0 0;opacity:.8;transition:height .4s;min-width:8px;}
+.bar.red{background:var(--danger-red);}
+.bar.amber{background:var(--warn-amber);}
+.bar.green{background:var(--safe-green);}
+
+/* ─── PROFILE CARD ─── */
+.profile-card{background:#fff;border:1px solid var(--gov-border);border-radius:2px;padding:16px;display:flex;gap:14px;align-items:flex-start;}
+.profile-avatar{width:46px;height:46px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px;font-weight:700;flex-shrink:0;}
+.profile-info h4{font-weight:700;font-size:15px;color:var(--gov-navy);}
+.profile-info p{font-size:12px;color:var(--gov-muted);margin-top:2px;}
+.profile-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+
+/* ─── FOOTER ─── */
+footer{background:var(--gov-navy);color:#8899aa;padding:32px 0;margin-top:auto;border-top:3px solid var(--gh-gold);}
+.footer-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;}
+.footer-brand h3{font-family:var(--font-serif);color:#fff;font-size:16px;margin-bottom:8px;}
+.footer-brand p{font-size:12px;line-height:1.7;}
+.footer-col h4{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#b0bfd4;margin-bottom:10px;font-weight:700;}
+.footer-col a{display:block;font-size:12px;color:#8899aa;text-decoration:none;margin-bottom:5px;}
+.footer-col a:hover{color:#fff;}
+.footer-bottom{max-width:1280px;margin:20px auto 0;padding:16px 24px 0;border-top:1px solid rgba(255,255,255,.1);font-size:11px;display:flex;justify-content:space-between;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  .sidebar-layout{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .footer-inner{grid-template-columns:1fr;}
+  .hurdle-grid{grid-template-columns:1fr;}
+  .header-inner{flex-wrap:wrap;}
+}
+
+/* ─── UTILITY ─── */
+.text-muted{color:var(--gov-muted);}
+.text-small{font-size:12px;}
+.text-serif{font-family:var(--font-serif);}
+.mt-0{margin-top:0;}.mt-8{margin-top:8px;}.mt-12{margin-top:12px;}.mt-16{margin-top:16px;}.mt-20{margin-top:20px;}.mt-24{margin-top:24px;}
+.mb-0{margin-bottom:0;}.mb-8{margin-bottom:8px;}.mb-12{margin-bottom:12px;}.mb-16{margin-bottom:16px;}.mb-20{margin-bottom:20px;}
+.flex{display:flex;}.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.gap-8{gap:8px;}.gap-12{gap:12px;}.gap-16{gap:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.divider{border:none;border-top:1px solid var(--gov-border);margin:16px 0;}
+.fw-700{font-weight:700;}
+.color-navy{color:var(--gov-navy);}
+.notice{background:#FFF8E1;border:1px solid #F6AD55;border-left:4px solid var(--warn-amber);padding:12px 16px;font-size:13px;color:#744210;margin-bottom:20px;}
+.section-divider{height:1px;background:var(--gov-border);margin:28px 0;}
+</style>
+</head>
+<body>
+
+<!-- FLAG STRIP -->
+<div class="flag-strip"></div>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  <div class="top-banner-inner">
+    <span>Official Website — Republic of Ghana · Financial Intelligence Centre</span>
+    <div>
+      <a href="#">Accessibility</a>
+      <a href="#">Contact</a>
+      <a href="#">Help Centre</a>
+      <a href="#" id="loginLink">Officer Login</a>
+    </div>
+  </div>
+</div>
+
+<!-- SITE HEADER -->
+<div class="site-header">
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="coat-of-arms">🦅</div>
+      <div class="agency-name">
+        <h1>Predictive Fraud Intelligence System</h1>
+        <p>Financial Intelligence Centre · Republic of Ghana</p>
+      </div>
+    </div>
+    <div class="flex gap-12" style="align-items:center;">
+      <div class="engine-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Engine Offline</span>
+      </div>
+      <button class="start-btn" id="engineBtn" onclick="toggleEngine()">▶ Activate Engine</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-item active" onclick="showPage('dashboard')">🏛 Dashboard</div>
+    <div class="nav-item" onclick="showPage('monitor')">📡 Live Monitor</div>
+    <div class="nav-item" onclick="showPage('transactions')">📋 Transactions</div>
+    <div class="nav-item" onclick="showPage('profiles')">👤 User Profiles</div>
+    <div class="nav-item" onclick="showPage('investigations')">🔍 Investigations <span class="nav-badge" id="invBadge">0</span></div>
+    <div class="nav-item" onclick="showPage('reports')">📊 Reports &amp; Analytics</div>
+    <div class="nav-item" onclick="showPage('settings')">⚙ System Settings</div>
+    <div class="nav-item" onclick="showPage('about')">ℹ About PFIS</div>
+  </div>
+</nav>
+
+<!-- LIVE TICKER -->
+<div class="live-ticker">
+  <div class="ticker-inner" id="tickerInner">
+    <span class="ticker-item">PFIS System Online · Monitoring Active · All channels nominal &nbsp;|&nbsp;</span>
+    <span class="ticker-item">PFIS system notice — Real-time fraud monitoring now mandatory &nbsp;|&nbsp;</span>
+    <span class="ticker-item">System uptime: 99.97% &nbsp;|&nbsp;</span>
+    <span class="ticker-item">Total fraud prevented this session: ₵0.00 &nbsp;|&nbsp;</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: DASHBOARD
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper active" id="page-dashboard">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Dashboard</span></div>
+        <h2>Command Dashboard</h2>
+        <p>Real-time overview of Ghana's financial fraud prevention network</p>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#7a92b0;" id="dashTime"></div>
+    </div>
+  </div>
+  <div class="container page-content">
+    
+    <!-- Engine offline notice -->
+    <div class="notice" id="engineNotice">
+      ⚠ <strong>Engine Offline:</strong> The PFIS monitoring engine is not active. Click <strong>"Activate Engine"</strong> above to begin real-time transaction surveillance.
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Total Transactions</div><div class="value" id="st-total">0</div><div class="sub">This session</div></div>
+      <div class="stat-card green"><div class="label">Safe Transactions</div><div class="value" id="st-safe">0</div><div class="sub">Score 0–40</div></div>
+      <div class="stat-card amber"><div class="label">Moderate Risk</div><div class="value" id="st-mod">0</div><div class="sub">Score 41–70, monitoring</div></div>
+      <div class="stat-card red"><div class="label">High Risk / Blocked</div><div class="value" id="st-high">0</div><div class="sub">Score 71–100, flagged</div></div>
+      <div class="stat-card gold"><div class="label">Funds Protected</div><div class="value" id="st-saved" style="font-size:20px;">₵0.00</div><div class="sub">Fraud cancelled</div></div>
+      <div class="stat-card"><div class="label">Detection Rate</div><div class="value" id="st-rate">—</div><div class="sub">High risk caught</div></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Risk Distribution -->
+      <div class="card">
+        <div class="card-header"><h3>Risk Distribution</h3><span class="card-meta" id="distMeta">No data</span></div>
+        <div class="card-body">
+          <div id="distBars" style="display:flex;flex-direction:column;gap:10px;">
+            <div class="text-muted text-small">Activate the engine to see live distribution.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score Trend -->
+      <div class="card">
+        <div class="card-header"><h3>Risk Score Trend</h3><span class="card-meta">Last 20 transactions</span></div>
+        <div class="card-body">
+          <svg id="trendSvg" width="100%" height="90" style="display:block;">
+            <text x="50%" y="50%" text-anchor="middle" fill="#CBD5E0" font-size="13" font-family="Source Sans 3">No data — engine offline</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent High-Risk Transactions -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Recent High-Risk Transactions</h3>
+        <button class="btn btn-outline btn-sm" onclick="showPage('transactions')">View All →</button>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="gov-table" id="dashHighTable">
+          <thead><tr><th>Ref No.</th><th>Customer</th><th>Amount</th><th>Risk Score</th><th>Flags</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="dashHighBody"><tr><td colspan="8" style="text-align:center;color:var(--gov-muted);padding:28px;">No high-risk transactions detected.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3>Transactions by User Type</h3></div>
+        <div class="card-body" id="userTypeChart">
+          <div class="text-muted text-small">Engine offline.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>System Activity Log</h3></div>
+        <div class="card-body" style="padding:0;max-height:220px;overflow-y:auto;">
+          <table class="gov-table">
+            <tbody id="activityLog">
+              <tr><td style="color:var(--gov-muted);font-size:12px;">System initialised. Awaiting engine activation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: LIVE MONITOR
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-monitor">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Live Monitor</span></div>
+        <h2>Live Transaction Monitor</h2>
+        <p>Real-time feed of all transactions passing through PFIS evaluation</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-sm" onclick="clearMonitor()">Clear Feed</button>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="sidebar-layout">
+      <!-- Sidebar filters -->
+      <div>
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <h4>Filter by Risk</h4>
+            <a class="sidebar-link active" onclick="setMonFilter('all',this)">All Transactions</a>
+            <a class="sidebar-link" onclick="setMonFilter('safe',this)">✅ Safe Only</a>
+            <a class="sidebar-link" onclick="setMonFilter('moderate',this)">⚠ Moderate Risk</a>
+            <a class="sidebar-link" onclick="setMonFilter('high',this)">🚨 High Risk</a>
+          </div>
+          <div class="sidebar-section">
+            <h4>Filter by User Type</h4>
+            <a class="sidebar-link active-type" onclick="setTypeFilter('all',this)">All Users</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Trader',this)">Traders</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Student',this)">Students</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Worker',this)">Workers</a>
+            <a class="sidebar-link" onclick="setTypeFilter('Merchant',this)">Merchants</a>
+          </div>
+          <div class="sidebar-section">
+            <h4>Live Counts</h4>
+            <div style="font-size:13px;">
+              <div class="flex-between mb-8"><span>Safe:</span><strong id="monC-safe">0</strong></div>
+              <div class="flex-between mb-8"><span>Moderate:</span><strong id="monC-mod">0</strong></div>
+              <div class="flex-between"><span>High Risk:</span><strong id="monC-high" style="color:var(--danger-red);">0</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div>
+        <div id="monitorFeed">
+          <div class="alert-strip info">Engine is offline. Activate the engine to begin live monitoring.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: TRANSACTIONS
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-transactions">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Transactions</span></div>
+        <h2>Transaction Ledger</h2>
+        <p>Complete record of all evaluated transactions with full audit trail</p>
+      </div>
+      <div><span id="txnCount" style="color:#b0bfd4;font-size:14px;">0 transactions recorded</span></div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <!-- Filter bar -->
+    <div class="card mb-20">
+      <div class="card-body" style="padding:14px 20px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <label class="form-label" style="margin-bottom:3px;">Risk Level</label>
+            <select class="form-control" style="width:160px;" id="txnRiskFilter" onchange="renderTxnTable()">
+              <option value="all">All Levels</option>
+              <option value="safe">Safe</option>
+              <option value="moderate">Moderate</option>
+              <option value="high">High Risk</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:3px;">Status</label>
+            <select class="form-control" style="width:160px;" id="txnStatusFilter" onchange="renderTxnTable()">
+              <option value="all">All Statuses</option>
+              <option value="approved">Approved</option>
+              <option value="blocked">Blocked</option>
+              <option value="monitoring">Monitoring</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div style="margin-top:18px;">
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:0;overflow-x:auto;">
+        <table class="gov-table" id="txnTable">
+          <thead>
+            <tr>
+              <th>Ref No.</th><th>Date/Time</th><th>Customer</th><th>Type</th>
+              <th>Amount (₵)</th><th>Recipient</th><th>Device</th><th>Location</th>
+              <th>Risk Score</th><th>Risk Level</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="txnBody">
+            <tr><td colspan="12" style="text-align:center;color:var(--gov-muted);padding:40px;">No transactions recorded. Activate the engine to begin monitoring.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: USER PROFILES
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-profiles">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>User Profiles</span></div>
+        <h2>Registered User Profiles</h2>
+        <p>Behavioural baselines and segmentation profiles for monitored users</p>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="grid-2 mb-20" id="profileCards"></div>
+
+    <div class="card">
+      <div class="card-header"><h3>Behavioural Segmentation Framework</h3></div>
+      <div class="card-body">
+        <p style="margin-bottom:16px;color:var(--gov-muted);font-size:13px;">PFIS groups users into broad demographic categories, then further subdivides by observed behavioural patterns. This layered model enables precise anomaly detection with minimal false positives.</p>
+        <div class="grid-3">
+          <div style="border:1px solid var(--gov-border);padding:14px;border-top:3px solid var(--gov-navy);">
+            <div style="font-weight:700;color:var(--gov-navy);margin-bottom:10px;font-family:var(--font-serif);font-size:16px;">Students</div>
+            <div class="text-small text-muted">Age 18–25 · Low–medium income</div>
+            <hr class="divider">
+            <div style="font-size:12px;color:var(--gov-text);">· Savers<br>· Freelancers<br>· Frequent Senders/Receivers<br>· Bursary Recipients</div>
+          </div>
+          <div style="border:1px solid var(--gov-border);padding:14px;border-top:3px solid var(--gh-gold);">
+            <div style="font-weight:700;color:var(--gov-navy);margin-bottom:10px;font-family:var(--font-serif);font-size:16px;">Workers</div>
+            <div class="text-small text-muted">Age 25–55 · Regular employment</div>
+            <hr class="divider">
+            <div style="font-size:12px;color:var(--gov-text);">· Bill Payers<br>· Remittance Senders<br>· Salary Recipients<br>· Commuters</div>
+          </div>
+          <div style="border:1px solid var(--gov-border);padding:14px;border-top:3px solid var(--gh-red);">
+            <div style="font-weight:700;color:var(--gov-navy);margin-bottom:10px;font-family:var(--font-serif);font-size:16px;">Merchants</div>
+            <div class="text-small text-muted">Traders &amp; business owners</div>
+            <hr class="divider">
+            <div style="font-size:12px;color:var(--gov-text);">· Bulk Receivers<br>· Frequent Traders<br>· Wholesale Buyers<br>· Market Vendors</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: INVESTIGATIONS
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-investigations">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Investigations</span></div>
+        <h2>Fraud Investigation Queue</h2>
+        <p>Cases escalated for review by the Financial Intelligence Centre</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openReportModal()">+ File New Case</button>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="grid-2 mb-20">
+      <div class="stat-card red"><div class="label">Open Cases</div><div class="value" id="inv-open">0</div></div>
+      <div class="stat-card green"><div class="label">Resolved Cases</div><div class="value" id="inv-resolved">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Active Investigation Queue</h3></div>
+      <div class="card-body" style="padding:0;">
+        <table class="gov-table">
+          <thead><tr><th>Case No.</th><th>Transaction Ref</th><th>Suspect Account</th><th>Amount</th><th>Alert Reason</th><th>Escalated</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="invBody"><tr><td colspan="9" style="text-align:center;color:var(--gov-muted);padding:32px;">No cases in queue. High-risk transactions will appear here automatically.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: REPORTS & ANALYTICS
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-reports">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>Reports &amp; Analytics</span></div>
+        <h2>Reports &amp; Analytics</h2>
+        <p>Statistical summaries, trend analysis and performance metrics</p>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+
+    <div class="card mb-20">
+      <div class="card-header"><h3>Session Performance Summary</h3></div>
+      <div class="card-body">
+        <div class="grid-3" id="reportSummary">
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Transactions Processed</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--gov-navy);" id="rpt-total">0</div></div>
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Fraud Prevention Rate</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--safe-green);" id="rpt-rate">—</div></div>
+          <div><div class="label" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gov-muted);margin-bottom:4px;">Total Value Protected</div><div class="text-serif" style="font-size:28px;font-weight:700;color:var(--gov-navy);" id="rpt-saved">₵0.00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3>Fraud Type Breakdown</h3></div>
+        <div class="card-body" id="fraudTypeBreakdown">
+          <div class="text-muted text-small">No data available.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Risk by User Segment</h3></div>
+        <div class="card-body" id="riskBySegment">
+          <div class="text-muted text-small">No data available.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <div class="card-header"><h3>Hurdle Failure Frequency</h3><span class="card-meta">Which checks catch the most fraud</span></div>
+      <div class="card-body" id="hurdleStats">
+        <div class="text-muted text-small">No data available. Activate engine to collect statistics.</div>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <div class="card-header"><h3>Generate Official Report</h3></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Report Type</label>
+            <select class="form-control" id="rptType">
+              <option>Daily Transaction Summary</option>
+              <option>Fraud Incident Report</option>
+              <option>Investigation Status Report</option>
+              <option>Monthly Analytics Report</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Period</label>
+            <select class="form-control">
+              <option>Current Session</option>
+              <option>Today</option>
+              <option>This Week</option>
+              <option>This Month</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="generateReport()">Generate &amp; Download Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: SETTINGS
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-settings">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>System Settings</span></div>
+        <h2>System Configuration</h2>
+        <p>Configure PFIS risk thresholds, alert rules, and integration settings</p>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="sidebar-layout">
+      <div>
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <h4>Settings Menu</h4>
+            <a class="sidebar-link active" onclick="showSettings('risk',this)">Risk Thresholds</a>
+            <a class="sidebar-link" onclick="showSettings('alerts',this)">Alert Rules</a>
+            <a class="sidebar-link" onclick="showSettings('integration',this)">API Integration</a>
+            <a class="sidebar-link" onclick="showSettings('engine',this)">Engine Config</a>
+            <a class="sidebar-link" onclick="showSettings('users',this)">Officer Accounts</a>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Risk Thresholds -->
+        <div id="settings-risk">
+          <div class="card">
+            <div class="card-header"><h3>Risk Score Thresholds</h3></div>
+            <div class="card-body">
+              <div class="notice">Changes to thresholds affect all future transaction evaluations. Consult the FIC before modifying.</div>
+              <div class="form-group">
+                <label class="form-label">Safe Threshold (Max Score)</label>
+                <input type="number" class="form-control" id="thresh-safe" value="40" min="10" max="60" style="max-width:200px;">
+                <div class="text-small text-muted mt-8">Transactions scoring ≤ this value are processed normally.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Moderate Threshold (Max Score)</label>
+                <input type="number" class="form-control" id="thresh-mod" value="70" min="40" max="90" style="max-width:200px;">
+                <div class="text-small text-muted mt-8">Transactions scoring between safe+1 and this value are flagged for monitoring.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">High Risk (Blocked above)</label>
+                <input type="number" class="form-control" value="71" disabled style="max-width:200px;background:#f5f5f5;">
+                <div class="text-small text-muted mt-8">Automatically calculated. Transactions above moderate threshold are blocked and alerted.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Transaction Interval (seconds)</label>
+                <input type="number" class="form-control" id="txnInterval" value="2.8" min="0.5" max="10" step="0.5" style="max-width:200px;">
+                <div class="text-small text-muted mt-8">How frequently the engine generates simulated transactions.</div>
+              </div>
+              <button class="btn btn-primary" onclick="saveThresholds()">Save Configuration</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert Rules -->
+        <div id="settings-alerts" style="display:none;">
+          <div class="card">
+            <div class="card-header"><h3>Alert Configuration</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Customer Alert Method</label>
+                <select class="form-control">
+                  <option>SMS &amp; App Notification</option>
+                  <option>SMS Only</option>
+                  <option>App Notification Only</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Alert Message Template</label>
+                <textarea class="form-control" rows="3">This transaction looks unusual and could be a potential scam. Please confirm before proceeding or cancel if unsure. Ref: {TXN_ID}</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Investigation Team Email</label>
+                <input class="form-control" type="email" value="fraud@pfis.gov.gh">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Auto-escalate after (minutes)</label>
+                <input class="form-control" type="number" value="5" style="max-width:200px;">
+                <div class="text-small text-muted mt-8">If customer doesn't respond, auto-block transaction after this period.</div>
+              </div>
+              <button class="btn btn-primary" onclick="alert('Alert settings saved.')">Save Alert Rules</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Integration -->
+        <div id="settings-integration" style="display:none;">
+          <div class="card">
+            <div class="card-header"><h3>API &amp; Integration Settings</h3></div>
+            <div class="card-body">
+              <div class="notice">API credentials are encrypted at rest using AES-256. Do not share these credentials.</div>
+              <div class="form-group">
+                <label class="form-label">MTN Mobile Money API Endpoint</label>
+                <input class="form-control" value="https://api.mtn.com.gh/momo/v1/transactions" type="text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Vodafone Cash API Endpoint</label>
+                <input class="form-control" value="https://api.vodafone.com.gh/cash/v2/" type="text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">GCB Core Banking API</label>
+                <input class="form-control" value="https://cbs.gcb.com.gh/api/pfis/" type="text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">PFIS API Key (read-only)</label>
+                <input class="form-control" value="PFIS-GH-****-****-****-7A3F" type="text" readonly style="background:#f5f5f5;font-family:monospace;">
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-primary" onclick="alert('Integration settings saved.')">Save Settings</button>
+                <button class="btn btn-outline" onclick="alert('Connection test: All 3 endpoints reachable.')">Test Connections</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Engine Config -->
+        <div id="settings-engine" style="display:none;">
+          <div class="card">
+            <div class="card-header"><h3>ML Engine Configuration</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Primary Model</label>
+                <select class="form-control"><option>Isolation Forest (Anomaly Detection)</option><option>Gradient Boosting Classifier</option><option>Autoencoder Neural Network</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ensemble Mode</label>
+                <select class="form-control"><option>Enabled (weighted average)</option><option>Disabled (primary model only)</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Behavioural Baseline Window (days)</label>
+                <input class="form-control" type="number" value="90" style="max-width:200px;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model Retraining Schedule</label>
+                <select class="form-control"><option>Weekly (Recommended)</option><option>Daily</option><option>Monthly</option></select>
+              </div>
+              <button class="btn btn-primary" onclick="alert('Engine configuration saved.')">Save Engine Config</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Officer Accounts -->
+        <div id="settings-users" style="display:none;">
+          <div class="card">
+            <div class="card-header"><h3>Officer Accounts</h3><button class="btn btn-primary btn-sm" onclick="alert('Add officer form would open here.')">+ Add Officer</button></div>
+            <div class="card-body" style="padding:0;">
+              <table class="gov-table">
+                <thead><tr><th>Officer ID</th><th>Name</th><th>Role</th><th>Department</th><th>Last Login</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>FIC-001</td><td>Kwabena Owusu</td><td>Senior Analyst</td><td>Fraud Intelligence</td><td>Today, 08:42</td><td><span class="badge badge-safe">Active</span></td></tr>
+                  <tr><td>FIC-002</td><td>Abena Mensah</td><td>Investigator</td><td>Digital Crimes</td><td>Today, 09:15</td><td><span class="badge badge-safe">Active</span></td></tr>
+                  <tr><td>FIC-003</td><td>Kofi Asante-Twum</td><td>System Admin</td><td>IT Security</td><td>Yesterday, 17:03</td><td><span class="badge badge-safe">Active</span></td></tr>
+                  <tr><td>FIC-004</td><td>Ama Darkwa</td><td>Junior Analyst</td><td>Fraud Intelligence</td><td>2 days ago</td><td><span class="badge badge-moderate">On Leave</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE: ABOUT
+══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper" id="page-about">
+  <div class="page-header">
+    <div class="container">
+      <div>
+        <div class="breadcrumb">PFIS &rsaquo; <span>About</span></div>
+        <h2>About PFIS</h2>
+        <p>System documentation, legal framework and technical architecture</p>
+      </div>
+    </div>
+  </div>
+  <div class="container page-content">
+    <div class="sidebar-layout">
+      <div>
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <h4>On This Page</h4>
+            <a class="sidebar-link" href="#about-overview">Overview</a>
+            <a class="sidebar-link" href="#about-how">How It Works</a>
+            <a class="sidebar-link" href="#about-hurdles">Hurdle System</a>
+            <a class="sidebar-link" href="#about-legal">Legal Framework</a>
+            <a class="sidebar-link" href="#about-tech">Technical Stack</a>
+          </div>
+          <div class="sidebar-section">
+            <h4>Version</h4>
+            <div class="text-small text-muted">PFIS v2.4.1<br>Deployed: January 2025<br>Classification: Official</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card mb-20" id="about-overview">
+          <div class="card-header"><h3>System Overview</h3></div>
+          <div class="card-body">
+            <p style="line-height:1.8;margin-bottom:14px;">The Predictive Fraud Intelligence System (PFIS) is an AI-powered fraud prevention platform commissioned by the Financial Intelligence Centre. It is designed to monitor and evaluate financial transactions in real time across Ghana's financial infrastructure.</p>
+            <p style="line-height:1.8;margin-bottom:14px;">Unlike conventional fraud systems that respond reactively after fraudulent activity has occurred, PFIS employs a proactive, predictive approach. By continuously learning the behavioural patterns of each user, PFIS can identify subtle deviations that may signal manipulation or unauthorised access — often before the customer even realises they are being targeted.</p>
+            <div class="alert-strip success mt-16">
+              <strong>National Mandate:</strong> In accordance with regulatory directive FIC/2024/001, all licensed financial institutions operating in Ghana are required to integrate with PFIS by Q3 2025.
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-20" id="about-how">
+          <div class="card-header"><h3>How PFIS Works</h3></div>
+          <div class="card-body">
+            <div style="counter-reset:steps;">
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:start;">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">1</div>
+                <div><strong>Transaction Entry</strong><br><span class="text-small text-muted">Every transaction — from banking apps, mobile money services, or online platforms — passes through PFIS before being processed by the financial institution.</span></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">2</div>
+                <div><strong>Data Collection</strong><br><span class="text-small text-muted">PFIS collects transaction metadata: device ID, amount, timestamp, recipient, geolocation, and SIM card integrity status.</span></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">3</div>
+                <div><strong>Hurdle Evaluation</strong><br><span class="text-small text-muted">The transaction passes through six verification hurdles, each testing a different dimension of the user's established behavioural baseline.</span></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">4</div>
+                <div><strong>Risk Scoring (0–100)</strong><br><span class="text-small text-muted">A composite risk score is calculated. Scores 0–40 are safe; 41–70 are monitored; 71–100 are blocked and alerted.</span></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">5</div>
+                <div><strong>Dual Alert System</strong><br><span class="text-small text-muted">For high-risk transactions, the customer receives an immediate alert and the fraud investigation team is simultaneously notified.</span></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px;">6</div>
+                <div><strong>Continuous Learning</strong><br><span class="text-small text-muted">PFIS refines its models by analysing confirmed fraud cases, adapting thresholds, and incorporating new fraud patterns identified by the FIC.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-20" id="about-hurdles">
+          <div class="card-header"><h3>The Multi-Hurdle Risk Framework</h3></div>
+          <div class="card-body">
+            <table class="gov-table">
+              <thead><tr><th>Hurdle</th><th>Weight</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Device Identity</strong></td><td>20 pts</td><td>Checks whether the initiating device matches the user's known registered devices.</td></tr>
+                <tr><td><strong>Amount vs. Baseline</strong></td><td>25 pts</td><td>Compares transaction amount against the user's historical average and typical range.</td></tr>
+                <tr><td><strong>Transaction Timing</strong></td><td>15 pts</td><td>Evaluates whether the transaction occurs within the user's normal activity hours.</td></tr>
+                <tr><td><strong>Known Location</strong></td><td>15 pts</td><td>Verifies that the originating geolocation is consistent with the user's known locations.</td></tr>
+                <tr><td><strong>Known Recipient</strong></td><td>15 pts</td><td>Checks if the recipient account is one the user has previously transacted with.</td></tr>
+                <tr><td><strong>SIM Integrity</strong></td><td>10 pts</td><td>Verifies that the user's SIM card has not been recently swapped — a key indicator of SIM-swap fraud.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card mb-20" id="about-legal">
+          <div class="card-header"><h3>Legal &amp; Regulatory Framework</h3></div>
+          <div class="card-body">
+            <p style="line-height:1.8;margin-bottom:12px;">PFIS operates within the following legislative and regulatory instruments:</p>
+            <ul style="font-size:14px;line-height:2;padding-left:20px;color:var(--gov-text);">
+              <li>Financial Intelligence Centre Act, 2013 (Act XYZ)</li>
+              <li>Anti-Money Laundering Act, 2020 (Act 1044)</li>
+              <li>Payment Systems and Services Act, 2019 (Act 987)</li>
+              <li>Electronic Transactions Act, 2008 (Act 772)</li>
+              <li>Data Protection Act, 2012 (Act 843)</li>
+              <li>FIC Directive FIC/2024/001 — Real-Time Fraud Monitoring</li>
+            </ul>
+            <div class="alert-strip info mt-16">All data collected by PFIS is processed in accordance with Ghana's Data Protection Act. User data is encrypted, access-controlled, and subject to the data retention policies of the Financial Intelligence Centre.</div>
+          </div>
+        </div>
+
+        <div class="card" id="about-tech">
+          <div class="card-header"><h3>Technical Architecture</h3></div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;color:var(--gov-navy);">ML Models</div>
+                <div class="text-small text-muted" style="line-height:1.9;">Isolation Forest (anomaly)<br>Gradient Boosting Classifier<br>Autoencoder Neural Network<br>Ensemble (weighted average)</div>
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;color:var(--gov-navy);">Infrastructure</div>
+                <div class="text-small text-muted" style="line-height:1.9;">AWS GovCloud (Ghana Region)<br>AES-256 encryption at rest<br>TLS 1.3 in transit<br>99.97% SLA uptime</div>
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;color:var(--gov-navy);">Integrations</div>
+                <div class="text-small text-muted" style="line-height:1.9;">MTN Mobile Money API<br>Vodafone Cash API<br>AirtelTigo Money API<br>GCB, Ecobank, Zenith Bank</div>
+              </div>
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;color:var(--gov-navy);">Compliance</div>
+                <div class="text-small text-muted" style="line-height:1.9;">ISO 27001 Certified<br>PCI-DSS Level 1<br>GDPR aligned<br>BoG Audit-ready logs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TRANSACTION DETAIL MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="txnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Transaction Detail</h3>
+      <button class="modal-close" onclick="closeModal('txnModal')">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FILE CASE MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>File Investigation Case</h3>
+      <button class="modal-close" onclick="closeModal('reportModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Transaction Reference</label><input class="form-control" placeholder="e.g. TXN-GH-2025-..." id="caseRef"></div>
+      <div class="form-group"><label class="form-label">Suspected Fraud Type</label>
+        <select class="form-control" id="caseType">
+          <option>SIM Swap Fraud</option><option>Phishing/Social Engineering</option><option>Account Takeover</option><option>Fake Promotion Scam</option><option>Unauthorised Access</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Priority</label>
+        <select class="form-control" id="casePriority"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Case Description</label><textarea class="form-control" rows="3" id="caseDesc" placeholder="Describe the suspected fraud incident..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('reportModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitCase()">File Case</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>🦅 Predictive Fraud Intelligence System</h3>
+      <p>A project of the Financial Intelligence Centre. Protecting Ghana's digital financial ecosystem through AI-powered real-time fraud prevention.</p>
+      <p style="margin-top:12px;font-size:11px;">Classification: OFFICIAL &nbsp;|&nbsp; Version 2.4.1 &nbsp;|&nbsp; © 2025 Republic of Ghana</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="#" onclick="showPage('dashboard')">Dashboard</a>
+      <a href="#" onclick="showPage('monitor')">Live Monitor</a>
+      <a href="#" onclick="showPage('investigations')">Investigations</a>
+      <a href="#" onclick="showPage('reports')">Reports</a>
+      <a href="#" onclick="showPage('about')">About PFIS</a>
+    </div>
+    <div class="footer-col">
+      <h4>Regulatory Bodies</h4>
+      <a href="#">Financial Intelligence Centre</a>
+      <a href="#">Financial Intelligence Centre</a>
+      <a href="#">Ministry of Finance</a>
+      <a href="#">Ghana Revenue Authority</a>
+      <a href="#">Data Protection Commission</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Financial Intelligence Centre · P.O. Box GP 2674, Accra, Ghana · +233 302 666 174</span>
+    <span>Directive FIC/2024/001 &nbsp;|&nbsp; ISO 27001 Certified &nbsp;|&nbsp; PCI-DSS Level 1</span>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════════
+     JAVASCRIPT ENGINE
+══════════════════════════════════════════════════════════════ -->
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const PROFILES = [
+  {id:"U-GH-001",name:"Kofi Mensah",type:"Trader",sub:"Frequent Sender",avg:600,hours:[8,18],device:"Samsung Galaxy A54",location:"Kumasi",initials:"KM"},
+  {id:"U-GH-002",name:"Ama Boateng",type:"Student",sub:"Saver",avg:120,hours:[9,20],device:"iPhone 13",location:"Accra",initials:"AB"},
+  {id:"U-GH-003",name:"Kwame Asante",type:"Worker",sub:"Bill Payer",avg:350,hours:[7,21],device:"Tecno Spark 10",location:"Takoradi",initials:"KA"},
+  {id:"U-GH-004",name:"Akosua Frimpong",type:"Merchant",sub:"Bulk Receiver",avg:1200,hours:[6,20],device:"Xiaomi Redmi 12",location:"Accra",initials:"AF"},
+  {id:"U-GH-005",name:"Yaw Darko",type:"Worker",sub:"Remittance Sender",avg:450,hours:[8,19],device:"Samsung Galaxy A32",location:"Kumasi",initials:"YD"},
+  {id:"U-GH-006",name:"Efua Ansah",type:"Student",sub:"Freelancer",avg:200,hours:[10,22],device:"Tecno Camon 20",location:"Cape Coast",initials:"EA"},
+];
+const DEVICES = ["Samsung Galaxy A54","iPhone 13","Tecno Spark 10","Xiaomi Redmi 12","Samsung Galaxy A32","Tecno Camon 20","Unknown Android Device","New iPhone","Unregistered Tablet"];
+const LOCATIONS = ["Accra","Kumasi","Takoradi","Tamale","Cape Coast","Sunyani","Ho","Bolgatanga","Unknown Location","International IP"];
+const RECIPIENTS = ["MTN MoMo #0244-XXX","Vodafone Cash #0205-XXX","AirtelTigo #0277-XXX","GCB Acct #1003-XXX","Ecobank #0038-XXX","New Recipient","Unknown Account","International Wire"];
+
+let transactions = [], investigations = [], running = false, engineInterval = null;
+let txnInterval = 2800;
+let threshSafe = 40, threshMod = 70;
+let monFilter = 'all', typeFilter = 'all';
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function fmt(n){return '₵'+Number(n).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTime(d){return d.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function fmtDate(d){return d.toLocaleDateString('en-GH',{day:'2-digit',month:'short',year:'numeric'})+' '+fmtTime(d);}
+function uid(){return 'TXN-GH-'+Date.now().toString(36).toUpperCase();}
+function caseId(){return 'CASE-FIC-'+Date.now().toString(36).toUpperCase();}
+
+// ─── NAVIGATION ─────────────────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page-wrapper').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+  if(id==='dashboard') refreshDashboard();
+  if(id==='transactions') renderTxnTable();
+  if(id==='reports') renderReports();
+  if(id==='profiles') renderProfiles();
+  if(id==='investigations') renderInvestigations();
+  window.scrollTo(0,0);
+}
+
+// ─── ENGINE ─────────────────────────────────────────────────────────────────
+function toggleEngine(){
+  if(running){
+    clearInterval(engineInterval);
+    running=false;
+    document.getElementById('engineBtn').textContent='▶ Activate Engine';
+    document.getElementById('engineBtn').classList.remove('stop');
+    document.getElementById('statusDot').classList.remove('active');
+    document.getElementById('statusText').textContent='Engine Offline';
+    addLog('Engine deactivated by operator.');
+  } else {
+    running=true;
+    document.getElementById('engineBtn').textContent='■ Deactivate';
+    document.getElementById('engineBtn').classList.add('stop');
+    document.getElementById('statusDot').classList.add('active');
+    document.getElementById('statusText').textContent='Engine Active';
+    document.getElementById('engineNotice').style.display='none';
+    addLog('Engine activated. Monitoring '+PROFILES.length+' user profiles across all channels.');
+    processTxn();
+    engineInterval = setInterval(processTxn, txnInterval);
+  }
+}
+
+function processTxn(){
+  const profile = PROFILES[rand(0,PROFILES.length-1)];
+  const hour = new Date().getHours();
+  const unusual = {
+    device: Math.random()>0.65,
+    hour: hour<profile.hours[0]||hour>profile.hours[1]||Math.random()>0.7,
+    amount: Math.random()>0.6,
+    location: Math.random()>0.75,
+    recipient: Math.random()>0.72,
+    sim: Math.random()>0.85
+  };
+  const amount = unusual.amount ? profile.avg*rand(4,9) : profile.avg*(rand(70,130)/100);
+  const device = unusual.device ? DEVICES[rand(6,8)] : profile.device;
+  const location = unusual.location ? LOCATIONS[rand(8,9)] : LOCATIONS[rand(0,5)];
+  const recipient = unusual.recipient ? RECIPIENTS[rand(5,7)] : RECIPIENTS[rand(0,4)];
+
+  const hurdles = [
+    {name:"Device Identity",passed:!unusual.device,weight:20},
+    {name:"Amount vs Baseline",passed:!unusual.amount,weight:25},
+    {name:"Transaction Timing",passed:!unusual.hour,weight:15},
+    {name:"Known Location",passed:!unusual.location,weight:15},
+    {name:"Known Recipient",passed:!unusual.recipient,weight:15},
+    {name:"SIM Integrity",passed:!unusual.sim,weight:10},
+  ];
+  const score = hurdles.reduce((a,h)=>a+(h.passed?0:h.weight),0);
+  const risk = score<=threshSafe?'safe':score<=threshMod?'moderate':'high';
+  const txn = {
+    id:uid(), ts:new Date(), profile, amount, device, location, recipient,
+    hurdles, score, risk,
+    status: risk==='high'?'blocked':risk==='moderate'?'monitoring':'approved',
+    confirmed: null,
+    failedHurdles: hurdles.filter(h=>!h.passed).map(h=>h.name)
+  };
+  transactions.unshift(txn);
+  if(transactions.length>200) transactions.pop();
+
+  // Auto-create investigation for high-risk
+  if(risk==='high'){
+    const inv = {
+      id: caseId(), txnId: txn.id, account: txn.profile.name,
+      amount: txn.amount, reason: txn.failedHurdles.join(', '),
+      ts: new Date(), priority:'High', status:'Open'
+    };
+    investigations.unshift(inv);
+    document.getElementById('invBadge').textContent = investigations.filter(i=>i.status==='Open').length;
+    addLog('🚨 HIGH RISK: '+txn.id+' — '+txn.profile.name+' — Score '+score+'. Investigation case auto-created.');
+  } else {
+    addLog((risk==='moderate'?'⚠ ':'✅ ')+'['+risk.toUpperCase()+'] '+txn.id+' — '+txn.profile.name+' — '+fmt(amount)+' — Score '+score);
+  }
+
+  // Update live monitor
+  updateMonitor(txn);
+  updateTicker(txn);
+  refreshDashboard();
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function refreshDashboard(){
+  const total=transactions.length, safe=transactions.filter(t=>t.risk==='safe').length,
+    mod=transactions.filter(t=>t.risk==='moderate').length, high=transactions.filter(t=>t.risk==='high').length,
+    saved=transactions.filter(t=>t.confirmed===false).reduce((a,t)=>a+t.amount,0);
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-safe').textContent=safe;
+  document.getElementById('st-mod').textContent=mod;
+  document.getElementById('st-high').textContent=high;
+  document.getElementById('st-saved').textContent=fmt(saved);
+  document.getElementById('st-rate').textContent=total?Math.round((safe/total)*100)+'%':'—';
+
+  // Distribution bars
+  if(total>0){
+    document.getElementById('distMeta').textContent=total+' total';
+    document.getElementById('distBars').innerHTML=['safe','moderate','high'].map(r=>{
+      const cnt=r==='safe'?safe:r==='moderate'?mod:high;
+      const pct=Math.round((cnt/total)*100);
+      const col=r==='safe'?'var(--safe-green)':r==='moderate'?'var(--warn-amber)':'var(--danger-red)';
+      const lbl=r==='safe'?'Safe':r==='moderate'?'Moderate':'High Risk';
+      return `<div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:${col};font-weight:700;">${lbl}</span><span class="text-muted">${cnt} (${pct}%)</span>
+        </div>
+        <div style="background:#E2E8F0;border-radius:2px;height:14px;">
+          <div style="width:${pct}%;height:100%;background:${col};border-radius:2px;transition:width .4s;"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Trend SVG
+  const scores=transactions.slice(0,20).reverse().map(t=>t.score);
+  if(scores.length>1){
+    const svg=document.getElementById('trendSvg');
+    const w=svg.clientWidth||540,h=90,max=100;
+    const pts=scores.map((s,i)=>`${(i/(scores.length-1))*w},${h-(s/max)*(h-10)+5}`).join(' ');
+    svg.innerHTML=`
+      <defs>
+        <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1B2A4A" stop-opacity=".15"/>
+          <stop offset="100%" stop-color="#1B2A4A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points="${pts} ${w},${h} 0,${h}" fill="url(#tg)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--gov-navy)" stroke-width="2"/>
+      ${scores.map((s,i)=>{
+        const x=(i/(scores.length-1))*w,y=h-(s/max)*(h-10)+5;
+        const col=s<=threshSafe?'var(--safe-green)':s<=threshMod?'var(--warn-amber)':'var(--danger-red)';
+        return `<circle cx="${x}" cy="${y}" r="4" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+      }).join('')}
+    `;
+  }
+
+  // High risk table
+  const highTxns=transactions.filter(t=>t.risk==='high').slice(0,8);
+  document.getElementById('dashHighBody').innerHTML=highTxns.length?highTxns.map(t=>txnRow(t,true)).join(''):
+    '<tr><td colspan="8" style="text-align:center;color:var(--gov-muted);padding:28px;">No high-risk transactions detected.</td></tr>';
+
+  // User type chart
+  const typeData={};
+  PROFILES.forEach(p=>{typeData[p.type]={total:0,high:0};});
+  transactions.forEach(t=>{if(typeData[t.profile.type]){typeData[t.profile.type].total++;if(t.risk==='high')typeData[t.profile.type].high++;}});
+  document.getElementById('userTypeChart').innerHTML=Object.entries(typeData).map(([type,d])=>{
+    const pct=d.total?Math.round((d.high/d.total)*100):0;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span class="fw-700">${type}</span><span class="text-muted">${d.high}/${d.total} high-risk</span>
+      </div>
+      <div style="background:#E2E8F0;border-radius:2px;height:10px;">
+        <div style="width:${pct}%;height:100%;background:var(--danger-red);border-radius:2px;transition:width .4s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Report stats
+  document.getElementById('rpt-total').textContent=total;
+  document.getElementById('rpt-rate').textContent=total?Math.round((safe/total)*100)+'%':'—';
+  document.getElementById('rpt-saved').textContent=fmt(saved);
+}
+
+function txnRow(t,short=false){
+  const riskBadge=`<span class="badge badge-${t.risk}">${t.risk.toUpperCase()}</span>`;
+  const statusBadge=t.status==='approved'?'<span class="badge badge-safe">Approved</span>':
+    t.status==='blocked'?'<span class="badge badge-high">Blocked</span>':
+    t.status==='monitoring'?'<span class="badge badge-moderate">Monitoring</span>':
+    '<span class="badge" style="background:#742A2A;color:#fff;">Cancelled</span>';
+  const action=`<button class="btn btn-outline btn-sm" onclick="openTxnModal('${t.id}')">View</button>`;
+  if(short){
+    return `<tr>
+      <td style="font-size:11px;font-family:monospace;">${t.id}</td>
+      <td>${t.profile.name}</td>
+      <td>${fmt(t.amount)}</td>
+      <td><strong style="color:var(--danger-red);">${t.score}</strong></td>
+      <td style="font-size:11px;">${t.failedHurdles.slice(0,2).join(', ')}${t.failedHurdles.length>2?'...':''}</td>
+      <td style="font-size:11px;">${fmtTime(t.ts)}</td>
+      <td>${statusBadge}</td>
+      <td>${action}</td>
+    </tr>`;
+  }
+  return `<tr>
+    <td style="font-size:11px;font-family:monospace;">${t.id}</td>
+    <td style="font-size:11px;">${fmtDate(t.ts)}</td>
+    <td>${t.profile.name}</td>
+    <td>${t.profile.type}</td>
+    <td>${fmt(t.amount)}</td>
+    <td style="font-size:11px;">${t.recipient}</td>
+    <td style="font-size:11px;">${t.device}</td>
+    <td style="font-size:11px;">${t.location}</td>
+    <td><strong style="color:${t.score<=threshSafe?'var(--safe-green)':t.score<=threshMod?'var(--warn-amber)':'var(--danger-red)'}">${t.score}</strong></td>
+    <td>${riskBadge}</td>
+    <td>${statusBadge}</td>
+    <td>${action}</td>
+  </tr>`;
+}
+
+// ─── TRANSACTION TABLE ───────────────────────────────────────────────────────
+function renderTxnTable(){
+  const rf=document.getElementById('txnRiskFilter').value;
+  const sf=document.getElementById('txnStatusFilter').value;
+  let filtered=transactions.filter(t=>(rf==='all'||t.risk===rf)&&(sf==='all'||t.status===sf));
+  document.getElementById('txnCount').textContent=filtered.length+' transactions recorded';
+  document.getElementById('txnBody').innerHTML=filtered.length?filtered.map(t=>txnRow(t,false)).join(''):
+    '<tr><td colspan="12" style="text-align:center;color:var(--gov-muted);padding:40px;">No transactions match the selected filters.</td></tr>';
+}
+
+// ─── LIVE MONITOR ────────────────────────────────────────────────────────────
+function updateMonitor(txn){
+  const safe=transactions.filter(t=>t.risk==='safe').length;
+  const mod=transactions.filter(t=>t.risk==='moderate').length;
+  const high=transactions.filter(t=>t.risk==='high').length;
+  document.getElementById('monC-safe').textContent=safe;
+  document.getElementById('monC-mod').textContent=mod;
+  document.getElementById('monC-high').textContent=high;
+
+  const show=(monFilter==='all'||txn.risk===monFilter)&&(typeFilter==='all'||txn.profile.type===typeFilter);
+  if(!show) return;
+
+  const feed=document.getElementById('monitorFeed');
+  const borderCol=txn.risk==='high'?'var(--danger-red)':txn.risk==='moderate'?'var(--warn-amber)':'var(--safe-green)';
+  const bg=txn.risk==='high'?'#FFF5F5':txn.risk==='moderate'?'#FFFBEB':'#F0FFF4';
+  const el=document.createElement('div');
+  el.style.cssText=`background:${bg};border:1px solid var(--gov-border);border-left:4px solid ${borderCol};padding:12px 16px;margin-bottom:10px;border-radius:2px;animation:slideIn .3s ease;`;
+  el.innerHTML=`
+    <style>@keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}</style>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span class="badge badge-${txn.risk}">${txn.risk.toUpperCase()} · ${txn.score}</span>
+          <span style="font-size:11px;font-family:monospace;color:var(--gov-muted);">${txn.id}</span>
+          <span style="font-size:11px;color:var(--gov-muted);">${fmtTime(txn.ts)}</span>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--gov-navy);margin-bottom:4px;">${txn.profile.name} · ${fmt(txn.amount)} → ${txn.recipient}</div>
+        <div style="font-size:12px;color:var(--gov-muted);">${txn.device} · ${txn.location}</div>
+        ${txn.failedHurdles.length?`<div style="font-size:11px;color:var(--danger-red);margin-top:4px;">Failed: ${txn.failedHurdles.join(', ')}</div>`:''}
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${txn.risk==='high'&&txn.confirmed===null?`
+          <button class="btn btn-success btn-sm" onclick="confirmTxn('${txn.id}',this)">Confirm</button>
+          <button class="btn btn-danger btn-sm" onclick="cancelTxn('${txn.id}',this)">Cancel</button>
+        `:`<button class="btn btn-outline btn-sm" onclick="openTxnModal('${txn.id}')">Detail</button>`}
+      </div>
+    </div>
+  `;
+  feed.insertBefore(el, feed.firstChild);
+  // Keep feed manageable
+  while(feed.children.length>40) feed.removeChild(feed.lastChild);
+}
+
+function setMonFilter(f,el){
+  monFilter=f;
+  document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.remove('active'));
+  el.classList.add('active');
+}
+function setTypeFilter(f,el){
+  typeFilter=f;
+  document.querySelectorAll('.active-type').forEach(a=>a.classList.remove('active-type'));
+  el.classList.add('active-type');
+}
+function clearMonitor(){document.getElementById('monitorFeed').innerHTML='';}
+
+// ─── PROFILES ────────────────────────────────────────────────────────────────
+function renderProfiles(){
+  document.getElementById('profileCards').innerHTML=PROFILES.map(p=>{
+    const userTxns=transactions.filter(t=>t.profile.id===p.id);
+    const flagged=userTxns.filter(t=>t.risk==='high').length;
+    const totalAmt=userTxns.reduce((a,t)=>a+t.amount,0);
+    return `<div class="card">
+      <div class="card-body">
+        <div class="profile-card" style="padding:0;border:none;">
+          <div class="profile-avatar" style="background:var(--gov-navy);">${p.initials}</div>
+          <div class="profile-info">
+            <h4>${p.name}</h4>
+            <p>${p.type} · ${p.sub}</p>
+            <p style="font-family:monospace;font-size:11px;margin-top:4px;color:var(--gov-muted);">${p.id}</p>
+          </div>
+        </div>
+        <hr class="divider">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+          <div><div class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;">Avg Transaction</div><div class="fw-700">${fmt(p.avg)}</div></div>
+          <div><div class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;">Active Hours</div><div class="fw-700">${p.hours[0]}:00–${p.hours[1]}:00</div></div>
+          <div><div class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;">Transactions</div><div class="fw-700">${userTxns.length}</div></div>
+          <div><div class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;">High-Risk Flags</div><div class="fw-700" style="color:${flagged?'var(--danger-red)':'var(--safe-green)'};">${flagged}</div></div>
+        </div>
+        <hr class="divider">
+        <div style="font-size:12px;">
+          <div class="flex-between mb-8"><span class="text-muted">Primary Device</span><span style="font-size:11px;">${p.device}</span></div>
+          <div class="flex-between mb-8"><span class="text-muted">Home Location</span><span>${p.location}</span></div>
+          <div class="flex-between"><span class="text-muted">Total Transacted</span><span class="fw-700">${fmt(totalAmt)}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── INVESTIGATIONS ──────────────────────────────────────────────────────────
+function renderInvestigations(){
+  const open=investigations.filter(i=>i.status==='Open').length;
+  const resolved=investigations.filter(i=>i.status==='Resolved').length;
+  document.getElementById('inv-open').textContent=open;
+  document.getElementById('inv-resolved').textContent=resolved;
+  document.getElementById('invBody').innerHTML=investigations.length?investigations.map(inv=>`
+    <tr>
+      <td style="font-size:11px;font-family:monospace;">${inv.id}</td>
+      <td style="font-size:11px;font-family:monospace;">${inv.txnId}</td>
+      <td>${inv.account}</td>
+      <td>${fmt(inv.amount)}</td>
+      <td style="font-size:11px;max-width:180px;">${inv.reason}</td>
+      <td style="font-size:11px;">${fmtTime(inv.ts)}</td>
+      <td><span class="badge badge-${inv.priority==='High'?'high':'moderate'}">${inv.priority}</span></td>
+      <td><span class="badge badge-${inv.status==='Open'?'high':'safe'}">${inv.status}</span></td>
+      <td>
+        ${inv.status==='Open'?`<button class="btn btn-outline btn-sm" onclick="resolveCase('${inv.id}')">Resolve</button>`:'<span class="text-muted text-small">Closed</span>'}
+      </td>
+    </tr>
+  `).join(''):
+    '<tr><td colspan="9" style="text-align:center;color:var(--gov-muted);padding:32px;">No cases in queue.</td></tr>';
+}
+
+function resolveCase(id){
+  const inv=investigations.find(i=>i.id===id);
+  if(inv){inv.status='Resolved';renderInvestigations();document.getElementById('invBadge').textContent=investigations.filter(i=>i.status==='Open').length;}
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+function renderReports(){
+  if(transactions.length===0) return;
+  // Hurdle failure stats
+  const hf={};
+  transactions.forEach(t=>t.hurdles.filter(h=>!h.passed).forEach(h=>{hf[h.name]=(hf[h.name]||0)+1;}));
+  const hfSorted=Object.entries(hf).sort((a,b)=>b[1]-a[1]);
+  const maxHF=hfSorted[0]?hfSorted[0][1]:1;
+  document.getElementById('hurdleStats').innerHTML=hfSorted.map(([name,cnt])=>{
+    const pct=Math.round((cnt/maxHF)*100);
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span class="fw-700">${name}</span><span class="text-muted">${cnt} failures</span>
+      </div>
+      <div style="background:#E2E8F0;border-radius:2px;height:12px;">
+        <div style="width:${pct}%;height:100%;background:var(--gov-navy);border-radius:2px;transition:width .4s;"></div>
+      </div>
+    </div>`;
+  }).join('')||'<div class="text-muted text-small">No data.</div>';
+
+  // Risk by segment
+  const seg={};
+  PROFILES.forEach(p=>{seg[p.type]={safe:0,mod:0,high:0};});
+  transactions.forEach(t=>{
+    if(seg[t.profile.type]) seg[t.profile.type][t.risk==='safe'?'safe':t.risk==='moderate'?'mod':'high']++;
+  });
+  document.getElementById('riskBySegment').innerHTML=Object.entries(seg).map(([type,d])=>{
+    const tot=d.safe+d.mod+d.high;
+    return `<div style="margin-bottom:12px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;">${type} (${tot} txns)</div>
+      <div style="display:flex;height:16px;border-radius:2px;overflow:hidden;">
+        <div style="width:${tot?Math.round((d.safe/tot)*100):0}%;background:var(--safe-green);"></div>
+        <div style="width:${tot?Math.round((d.mod/tot)*100):0}%;background:var(--warn-amber);"></div>
+        <div style="width:${tot?Math.round((d.high/tot)*100):0}%;background:var(--danger-red);"></div>
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;margin-top:4px;color:var(--gov-muted);">
+        <span>Safe: ${d.safe}</span><span>Moderate: ${d.mod}</span><span style="color:var(--danger-red);">High: ${d.high}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Fraud type
+  const fTypes={'SIM Swap':0,'Unusual Device':0,'Amount Anomaly':0,'Unknown Location':0,'New Recipient':0};
+  transactions.filter(t=>t.risk==='high').forEach(t=>{
+    t.failedHurdles.forEach(h=>{
+      if(h.includes('SIM'))fTypes['SIM Swap']++;
+      else if(h.includes('Device'))fTypes['Unusual Device']++;
+      else if(h.includes('Amount'))fTypes['Amount Anomaly']++;
+      else if(h.includes('Location'))fTypes['Unknown Location']++;
+      else if(h.includes('Recipient'))fTypes['New Recipient']++;
+    });
+  });
+  const ftSorted=Object.entries(fTypes).sort((a,b)=>b[1]-a[1]);
+  const ftMax=ftSorted[0]?ftSorted[0][1]:1;
+  document.getElementById('fraudTypeBreakdown').innerHTML=ftSorted.map(([name,cnt])=>{
+    const pct=ftMax?Math.round((cnt/ftMax)*100):0;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span class="fw-700">${name}</span><span class="text-muted">${cnt} incidents</span>
+      </div>
+      <div style="background:#E2E8F0;border-radius:2px;height:12px;">
+        <div style="width:${pct}%;height:100%;background:var(--danger-red);border-radius:2px;transition:width .4s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openTxnModal(id){
+  const t=transactions.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('modalTitle').textContent='Transaction Detail — '+t.id;
+  const col=t.score<=threshSafe?'var(--safe-green)':t.score<=threshMod?'var(--warn-amber)':'var(--danger-red)';
+  document.getElementById('modalBody').innerHTML=`
+    ${t.risk==='high'&&t.confirmed===null?`<div class="alert-strip danger"><strong>⚠ FRAUD ALERT:</strong> This transaction looks unusual and could be a potential scam. Please confirm before proceeding or cancel if unsure. Ref: ${t.id}</div>`:''}
+    ${t.confirmed===true?'<div class="alert-strip success">✓ Confirmed by customer — transaction cleared and processed.</div>':''}
+    ${t.confirmed===false?'<div class="alert-strip danger">✕ Cancelled by customer — fraud escalated to investigation team.</div>':''}
+    <div class="grid-2 mb-16">
+      <div>
+        <div class="text-muted text-small mb-8">CUSTOMER</div>
+        <div class="fw-700 color-navy">${t.profile.name}</div>
+        <div class="text-small text-muted">${t.profile.type} · ${t.profile.sub}</div>
+        <div style="font-size:11px;font-family:monospace;color:var(--gov-muted);margin-top:2px;">${t.profile.id}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-serif);font-size:42px;font-weight:700;color:${col};line-height:1;">${t.score}</div>
+        <div class="text-small text-muted">RISK SCORE</div>
+        <span class="badge badge-${t.risk} mt-8">${t.risk.toUpperCase()}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;font-size:13px;">
+      ${[['Amount',fmt(t.amount)],['Recipient',t.recipient],['Device',t.device],['Location',t.location],['Time',fmtDate(t.ts)],['Status',t.status.toUpperCase()]].map(([k,v])=>`
+        <div style="background:var(--gov-silver);padding:10px;border-radius:2px;">
+          <div class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">${k}</div>
+          <div class="fw-700">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="text-muted text-small mb-8">HURDLE EVALUATION</div>
+    <div class="hurdle-grid">
+      ${t.hurdles.map(h=>`
+        <div class="hurdle-item">
+          <div class="hurdle-dot ${h.passed?'pass':'fail'}"></div>
+          <span class="hurdle-label">${h.name}</span>
+          <span class="hurdle-weight">${h.weight}pt</span>
+        </div>`).join('')}
+    </div>
+  `;
+  document.getElementById('modalFooter').innerHTML=`
+    ${t.risk==='high'&&t.confirmed===null?`
+      <button class="btn btn-success" onclick="confirmTxn('${t.id}')">✓ Confirm Legitimate</button>
+      <button class="btn btn-danger" onclick="cancelTxn('${t.id}')">✕ Cancel Transaction</button>
+    `:''}
+    <button class="btn btn-outline" onclick="closeModal('txnModal')">Close</button>
+  `;
+  document.getElementById('txnModal').classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function confirmTxn(id){
+  const t=transactions.find(x=>x.id===id);
+  if(t){t.confirmed=true;t.status='approved';addLog('✅ '+id+' confirmed by customer — cleared.');}
+  closeModal('txnModal');refreshDashboard();renderTxnTable();
+}
+function cancelTxn(id){
+  const t=transactions.find(x=>x.id===id);
+  if(t){t.confirmed=false;t.status='cancelled';addLog('🚫 '+id+' cancelled by customer — fraud confirmed, escalated.');}
+  closeModal('txnModal');refreshDashboard();renderTxnTable();
+}
+
+// ─── TICKER ─────────────────────────────────────────────────────────────────
+function updateTicker(txn){
+  const el=document.getElementById('tickerInner');
+  const tag=txn.risk==='high'?'h':txn.risk==='moderate'?'m':'s';
+  el.innerHTML+=`<span class="ticker-item">&nbsp;|&nbsp; <span class="risk-tag ${tag}">[${txn.risk.toUpperCase()}]</span> ${txn.profile.name} — ${fmt(txn.amount)} — Score ${txn.score}</span>`;
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function showSettings(id,el){
+  ['risk','alerts','integration','engine','users'].forEach(s=>{
+    document.getElementById('settings-'+s).style.display='none';
+  });
+  document.getElementById('settings-'+id).style.display='block';
+  document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.remove('active'));
+  el.classList.add('active');
+}
+function saveThresholds(){
+  threshSafe=parseInt(document.getElementById('thresh-safe').value);
+  threshMod=parseInt(document.getElementById('thresh-mod').value);
+  const newInterval=parseFloat(document.getElementById('txnInterval').value)*1000;
+  if(running&&newInterval!==txnInterval){
+    clearInterval(engineInterval);
+    txnInterval=newInterval;
+    engineInterval=setInterval(processTxn,txnInterval);
+  } else {txnInterval=newInterval;}
+  addLog('⚙ Thresholds updated: Safe≤'+threshSafe+', Moderate≤'+threshMod+', Interval '+txnInterval/1000+'s');
+  alert('Configuration saved. New thresholds: Safe ≤'+threshSafe+', Moderate ≤'+threshMod);
+}
+
+// ─── CASE MODAL ──────────────────────────────────────────────────────────────
+function openReportModal(){document.getElementById('reportModal').classList.add('open');}
+function submitCase(){
+  const inv={
+    id:caseId(),txnId:document.getElementById('caseRef').value||'MANUAL',
+    account:'Manual Entry',amount:0,
+    reason:document.getElementById('caseType').value+' — '+document.getElementById('caseDesc').value,
+    ts:new Date(),priority:document.getElementById('casePriority').value,status:'Open'
+  };
+  investigations.unshift(inv);
+  document.getElementById('invBadge').textContent=investigations.filter(i=>i.status==='Open').length;
+  renderInvestigations();
+  closeModal('reportModal');
+  addLog('📁 Manual case filed: '+inv.id);
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function addLog(msg){
+  const tbody=document.getElementById('activityLog');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="font-size:11px;"><span style="color:var(--gov-muted);font-family:monospace;">[${fmtTime(new Date())}]</span> ${msg}</td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+  while(tbody.children.length>50) tbody.removeChild(tbody.lastChild);
+}
+
+function generateReport(){
+  const rptType=document.getElementById('rptType').value;
+  const total=transactions.length,safe=transactions.filter(t=>t.risk==='safe').length,
+    mod=transactions.filter(t=>t.risk==='moderate').length,high=transactions.filter(t=>t.risk==='high').length,
+    saved=transactions.filter(t=>t.confirmed===false).reduce((a,t)=>a+t.amount,0);
+  const content=`PREDICTIVE FRAUD INTELLIGENCE SYSTEM
+Republic of Ghana — Financial Intelligence Centre
+${rptType.toUpperCase()}
+Generated: ${new Date().toLocaleString('en-GH')}
+Classification: OFFICIAL
+${'='.repeat(60)}
+
+SUMMARY STATISTICS
+Total Transactions: ${total}
+Safe: ${safe} | Moderate Risk: ${mod} | High Risk: ${high}
+Total Funds Protected: ${fmt(saved)}
+Fraud Prevention Rate: ${total?Math.round((safe/total)*100):0}%
+
+INVESTIGATION CASES: ${investigations.length} total (${investigations.filter(i=>i.status==='Open').length} open)
+
+${'='.repeat(60)}
+PFIS v2.4.1 | Directive FIC/2024/001
+`;
+  const blob=new Blob([content],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='PFIS_Report_'+Date.now()+'.txt';
+  a.click();
+}
+
+function exportCSV(){
+  if(!transactions.length){alert('No transactions to export.');return;}
+  const rf=document.getElementById('txnRiskFilter').value;
+  const sf=document.getElementById('txnStatusFilter').value;
+  let data=transactions.filter(t=>(rf==='all'||t.risk===rf)&&(sf==='all'||t.status===sf));
+  const csv=['Ref No.,DateTime,Customer,User Type,Amount,Recipient,Device,Location,Risk Score,Risk Level,Status']
+    .concat(data.map(t=>[t.id,fmtDate(t.ts),t.profile.name,t.profile.type,t.amount,t.recipient,t.device,t.location,t.score,t.risk,t.status].join(','))).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='PFIS_Transactions_'+Date.now()+'.csv';
+  a.click();
+}
+
+// ─── CLOCK ──────────────────────────────────────────────────────────────────
+setInterval(()=>{
+  const now=new Date();
+  const el=document.getElementById('dashTime');
+  if(el) el.innerHTML=`<div style="font-size:16px;font-weight:700;">${fmtTime(now)}</div><div>${now.toLocaleDateString('en-GH',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>`;
+},1000);
+
+// Init profiles
+renderProfiles();
+</script>
+</body>
+</html>

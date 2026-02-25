@@ -1,0 +1,83 @@
+# PFIS (Predictive Fraud Intelligence System)
+
+This workspace has been upgraded from a single static HTML file to a small Express-based web application with multiple pages, navigation and a simple backend API.
+
+## Project structure
+
+```
+PFIS/                     # project root
+  package.json            # Node dependencies and scripts
+  server.js               # Express server entrypoint
+  public/                 # static assets served directly
+    css/style.css         # shared stylesheet
+    js/app.js             # client-side script (simulation logic, can be extended)
+  views/                  # EJS templates for each page
+    partials/
+      header.ejs          # header + navigation + opening HTML tags
+      footer.ejs          # footer + closing HTML tags + script include
+    dashboard.ejs         # dashboard page
+    monitor.ejs
+    transactions.ejs
+    profiles.ejs
+    investigations.ejs
+    reports.ejs
+    settings.ejs
+    about.ejs
+  PFIS.html               # legacy single-page snapshot (not used by server)
+  README.md               # this file
+```
+
+## Getting started
+
+1. Install Node.js (v16+).
+2. From the project root run:
+   ```bash
+   npm install
+   ```
+3. Start the server:
+   ```bash
+   npm start
+   ```
+   or during development:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Navigating the new pages
+
+- **Dashboard** – top‑level summary with real‑time statistics, risk distribution bars, recent high‑risk transactions, trend chart, user‑type breakdown, and an activity log. Data refreshes automatically while the engine is running.
+- **Live Monitor** – live feed of recent transactions with filtering controls and counts.
+- **Transactions** – history listing, fetches from `/api/transactions` and supports risk/status filters as well as CSV export.
+- **User Profiles**, **Investigations**, **Reports**, **Settings**, **About PFIS** – fully fleshed out versions of the original UI. Reports and Settings pages dynamically pull data from extended APIs; Settings includes a tabbed menu.
+
+All pages share the same header and footer partials and the global stylesheet.
+
+## Backend API
+
+The server now maintains an in-memory simulation of user profiles, transactions and investigations, and the "engine" auto‑generates suspicious transactions on startup.
+
+The following endpoints are available:
+
+- `GET /api/transactions` – returns an array of all transactions (newest first)
+- `GET /api/profiles` – returns the list of defined profiles
+- `GET /api/investigations` – returns open and closed investigation cases
+- `POST /api/investigations` – create a new case by sending JSON body with `txnId`, `account`, `amount`, `reason`, `priority` (returns 201)
+- `POST /api/engine` – control engine; send `{"action":"start"}` or `{"action":"stop"}`
+
+These can be replaced by database-backed logic or secured with authentication as your project grows.
+
+## Removing Bank of Ghana references
+
+All visible text has been stripped of "Bank of Ghana", reflecting that PFIS is an independent FIC project. Legacy file `PFIS.html` has also been updated and marked as legacy.
+
+## Next steps
+
+- Flesh out each view with real content or components
+- Wire up client-side code in `public/js/app.js` to call the backend endpoints
+- Add authentication/authorization to the Express server
+- Replace placeholder data with a datastore (MongoDB, PostgreSQL, etc.)
+
+---
+
+This upgrade provides a foundation for building out PFIS as a modular web application rather than a monolithic HTML page.

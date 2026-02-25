@@ -1,0 +1,167 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div class="container">
+    <div>
+      <div class="breadcrumb">PFIS &rsaquo; <span>System Settings</span></div>
+      <h2>System Configuration</h2>
+      <p>Configure PFIS risk thresholds, alert rules, and integration settings</p>
+    </div>
+  </div>
+</div>
+<div class="container page-content">
+  <div class="sidebar-layout">
+    <div>
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <h4>Settings Menu</h4>
+          <a class="sidebar-link active" onclick="showSettings('risk',this)">Risk Thresholds</a>
+          <a class="sidebar-link" onclick="showSettings('alerts',this)">Alert Rules</a>
+          <a class="sidebar-link" onclick="showSettings('integration',this)">API Integration</a>
+          <a class="sidebar-link" onclick="showSettings('engine',this)">Engine Config</a>
+          <a class="sidebar-link" onclick="showSettings('users',this)">Officer Accounts</a>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Risk Thresholds -->
+      <div id="settings-risk">
+        <div class="card">
+          <div class="card-header"><h3>Risk Score Thresholds</h3></div>
+          <div class="card-body">
+            <div class="notice">Changes to thresholds affect all future transaction evaluations. Consult the FIC before modifying.</div>
+            <div class="form-group">
+              <label class="form-label">Safe Threshold (Max Score)</label>
+              <input type="number" class="form-control" id="thresh-safe" value="40" min="10" max="60" style="max-width:200px;">
+              <div class="text-small text-muted mt-8">Transactions scoring ≤ this value are processed normally.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Moderate Threshold (Max Score)</label>
+              <input type="number" class="form-control" id="thresh-mod" value="70" min="40" max="90" style="max-width:200px;">
+              <div class="text-small text-muted mt-8">Transactions scoring between safe+1 and this value are flagged for monitoring.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">High Risk (Blocked above)</label>
+              <input type="number" class="form-control" value="71" disabled style="max-width:200px;background:#f5f5f5;">
+              <div class="text-small text-muted mt-8">Automatically calculated. Transactions above moderate threshold are blocked and alerted.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transaction Interval (seconds)</label>
+              <input type="number" class="form-control" id="txnInterval" value="2.8" min="0.5" max="10" step="0.5" style="max-width:200px;">
+              <div class="text-small text-muted mt-8">How frequently the engine generates simulated transactions.</div>
+            </div>
+            <button class="btn btn-primary" onclick="saveThresholds()">Save Configuration</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert Rules -->
+      <div id="settings-alerts" style="display:none;">
+        <div class="card">
+          <div class="card-header"><h3>Alert Configuration</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Customer Alert Method</label>
+              <select class="form-control">
+                <option>SMS &amp; App Notification</option>
+                <option>SMS Only</option>
+                <option>App Notification Only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alert Message Template</label>
+              <textarea class="form-control" rows="3">This transaction looks unusual and could be a potential scam. Please confirm before proceeding or cancel if unsure. Ref: {TXN_ID}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Investigation Team Email</label>
+              <input class="form-control" type="email" value="fraud@pfis.gov.gh">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auto-escalate after (minutes)</label>
+              <input class="form-control" type="number" value="5" style="max-width:200px;">
+              <div class="text-small text-muted mt-8">If customer doesn't respond, auto-block transaction after this period.</div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('Alert settings saved.')">Save Alert Rules</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Integration -->
+      <div id="settings-integration" style="display:none;">
+        <div class="card">
+          <div class="card-header"><h3>API &amp; Integration Settings</h3></div>
+          <div class="card-body">
+            <div class="notice">API credentials are encrypted at rest using AES-256. Do not share these credentials.</div>
+            <div class="form-group">
+              <label class="form-label">MTN Mobile Money API Endpoint</label>
+              <input class="form-control" value="https://api.mtn.com.gh/momo/v1/transactions" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vodafone Cash API Endpoint</label>
+              <input class="form-control" value="https://api.vodafone.com.gh/cash/v2/" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GCB Core Banking API</label>
+              <input class="form-control" value="https://cbs.gcb.com.gh/api/pfis/" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">PFIS API Key (read-only)</label>
+              <input class="form-control" value="PFIS-GH-****-****-****-7A3F" type="text" readonly style="background:#f5f5f5;font-family:monospace;">
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="alert('Integration settings saved.')">Save Settings</button>
+              <button class="btn btn-outline" onclick="alert('Connection test: All 3 endpoints reachable.')">Test Connections</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engine Config -->
+      <div id="settings-engine" style="display:none;">
+        <div class="card">
+          <div class="card-header"><h3>ML Engine Configuration</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Primary Model</label>
+              <select class="form-control"><option>Isolation Forest (Anomaly Detection)</option><option>Gradient Boosting Classifier</option><option>Autoencoder Neural Network</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ensemble Mode</label>
+              <select class="form-control"><option>Enabled (weighted average)</option><option>Disabled (primary model only)</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Behavioural Baseline Window (days)</label>
+              <input class="form-control" type="number" value="90" style="max-width:200px;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model Retraining Schedule</label>
+              <select class="form-control"><option>Weekly (Recommended)</option><option>Daily</option><option>Monthly</option></select>
+            </div>
+            <button class="btn btn-primary" onclick="alert('Engine configuration saved.')">Save Engine Config</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Officer Accounts -->
+      <div id="settings-users" style="display:none;">
+        <div class="card">
+          <div class="card-header"><h3>Officer Accounts</h3><button class="btn btn-primary btn-sm" onclick="alert('Add officer form would open here.')">+ Add Officer</button></div>
+          <div class="card-body" style="padding:0;">
+            <table class="gov-table">
+              <thead><tr><th>Officer ID</th><th>Name</th><th>Role</th><th>Department</th><th>Last Login</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>FIC-001</td><td>Kwabena Owusu</td><td>Senior Analyst</td><td>Fraud Intelligence</td><td>Today, 08:42</td><td><span class="badge badge-safe">Active</span></td></tr>
+                <tr><td>FIC-002</td><td>Abena Mensah</td><td>Investigator</td><td>Digital Crimes</td><td>Today, 09:15</td><td><span class="badge badge-safe">Active</span></td></tr>
+                <tr><td>FIC-003</td><td>Kofi Asante-Twum</td><td>System Admin</td><td>IT Security</td><td>Yesterday, 17:03</td><td><span class="badge badge-safe">Active</span></td></tr>
+                <tr><td>FIC-004</td><td>Ama Darkwa</td><td>Junior Analyst</td><td>Fraud Intelligence</td><td>2 days ago</td><td><span class="badge badge-moderate">On Leave</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
