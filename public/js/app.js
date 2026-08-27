@@ -106,6 +106,93 @@ function loadSampleLegitSms() {
   if (textInput) textInput.value = 'Payment received for GHS 450.00 from Ama Boateng. Current balance: GHS 1250.00. Available balance: GHS 1250.00. Reference: TXN-PFIS-MOMO99.';
 }
 
+// --- Threat Intelligence Blacklist Handlers ---
+function searchBlacklist() {
+  const query = document.getElementById('blacklistSearchInput')?.value || '';
+  const tbody = document.getElementById('blacklistTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;">⌛ Searching threat database...</td></tr>';
+
+  fetch(`/api/v1/threats/search?q=${encodeURIComponent(query)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || !data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--gov-muted);">No threat records found matching your query.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${item.value}</td>
+          <td><span class="badge badge-navy" style="font-size:10px;">${item.type}</span></td>
+          <td style="font-size:11px;">${item.reason}</td>
+          <td style="font-size:11px;">${item.reportedBy}</td>
+          <td style="font-weight:700;color:var(--danger-red);">${item.reportsCount}</td>
+          <td><span class="badge badge-high">${item.risk}</span></td>
+        </tr>
+      `).join('');
+    })
+    .catch(err => {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--danger-red);text-align:center;">Error searching threats: ${err.message}</td></tr>`;
+    });
+}
+
+function reportScammer() {
+  const value = document.getElementById('reportValue')?.value;
+  const reason = document.getElementById('reportReason')?.value;
+  if (!value || !value.trim()) {
+    alert('Please enter a phone number or agent ID to report.');
+    return;
+  }
+
+  fetch('/api/v1/threats/report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: value.trim(), reason, reportedBy: "Operator / MoMo Subscriber" })
+  })
+  .then(r => r.json())
+  .then(data => {
+    alert(data.message || 'Scammer reported and blacklisted across Ghana Telcos.');
+    if (document.getElementById('reportValue')) document.getElementById('reportValue').value = '';
+    searchBlacklist();
+  })
+  .catch(err => alert('Failed to submit report: ' + err.message));
+}
+
+// --- Case Filing Handlers ---
+function openReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (modal) modal.classList.add('open');
+}
+
+function submitCase() {
+  const caseRef = document.getElementById('caseRef')?.value || 'MANUAL-ENTRY';
+  const caseType = document.getElementById('caseType')?.value || 'Fake Credit SMS Reversal Scam';
+  const casePriority = document.getElementById('casePriority')?.value || 'High';
+  const caseDesc = document.getElementById('caseDesc')?.value || 'Reported suspicious activity';
+
+  fetch('/api/investigations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      txnId: caseRef,
+      account: 'Investigated MoMo Account',
+      amount: 0,
+      reason: `${caseType}: ${caseDesc}`,
+      priority: casePriority
+    })
+  })
+  .then(r => r.json())
+  .then(inv => {
+    addLog(`📁 Investigation Case Created: ${inv.id}`);
+    closeModal('reportModal');
+    alert(`Case ${inv.id} filed successfully with Financial Intelligence Centre.`);
+    if (window.location.pathname === '/investigations') {
+      fetch('/api/investigations').then(r => r.json()).then(renderInvestPage);
+    }
+  });
+}
+
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function fmt(n){return '₵'+Number(n).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtTime(d){return d.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
@@ -494,6 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refresh = () => fetch('/api/transactions').then(r=>r.json()).then(renderDashboard);
     refresh();
     setInterval(refresh, 3000);
+    searchBlacklist();
   }
   if(path === '/monitor'){
     const poll = () => fetch('/api/monitor').then(r=>r.json()).then(renderMonitorPage);
