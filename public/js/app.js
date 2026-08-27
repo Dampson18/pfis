@@ -106,6 +106,64 @@ function loadSampleLegitSms() {
   if (textInput) textInput.value = 'Payment received for GHS 450.00 from Ama Boateng. Current balance: GHS 1250.00. Available balance: GHS 1250.00. Reference: TXN-PFIS-MOMO99.';
 }
 
+// --- SIM Swap Risk Check Handler ---
+function verifySimSwapRisk() {
+  const telco = document.getElementById('simTelcoSelect')?.value || 'MTN';
+  const phoneNumber = document.getElementById('simPhoneInput')?.value || '';
+  const simSwapAgeHours = Number(document.getElementById('simAgeInput')?.value || 999);
+  const imsiChanged = document.getElementById('simImsiCheck')?.checked || false;
+  const locationMismatch = document.getElementById('simLocCheck')?.checked || false;
+  const deviceImeiChanged = document.getElementById('simImeiCheck')?.checked || false;
+
+  if (!phoneNumber.trim()) {
+    alert('Please enter a phone number for SIM swap verification.');
+    return;
+  }
+
+  const placeholder = document.getElementById('simResultPlaceholder');
+  const detailsBox = document.getElementById('simResultDetails');
+  if (placeholder) placeholder.style.display = 'none';
+  if (detailsBox) {
+    detailsBox.style.display = 'block';
+    detailsBox.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gov-navy);">⌛ Querying telco SIM registry for ${phoneNumber}...</div>`;
+  }
+
+  fetch('/api/v1/telco/verify-sim-swap', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch, deviceImeiChanged, telco })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!detailsBox) return;
+    const evalData = data.evaluation;
+    const badgeColor = evalData.blockRecommended ? 'var(--danger-red)' : evalData.riskLevel === 'moderate' ? 'var(--warn-amber)' : 'var(--safe-green)';
+    const badgeBg = evalData.blockRecommended ? 'var(--danger-bg)' : evalData.riskLevel === 'moderate' ? 'var(--warn-bg)' : 'var(--safe-bg)';
+
+    let flagsHtml = (evalData.flags || []).map(f => `
+      <div style="padding:4px 8px;background:#fff;border:1px solid #e2e8f0;margin-bottom:4px;font-size:11px;color:var(--danger-red);">
+        • ${f}
+      </div>
+    `).join('');
+
+    detailsBox.innerHTML = `
+      <div style="background:${badgeBg};border:1px solid ${badgeColor};padding:12px;border-radius:2px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-weight:700;color:${badgeColor};font-size:13px;">${evalData.riskLevel.toUpperCase()} RISK</span>
+          <span class="badge" style="background:${badgeColor};color:#fff;">Score: ${evalData.riskScore}/100</span>
+        </div>
+        <div style="font-size:12px;color:#1a202c;line-height:1.4;">${evalData.recommendation}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--gov-navy);margin-bottom:4px;">Detected Risk Indicators:</div>
+      ${flagsHtml || '<div style="font-size:11px;color:var(--safe-green);">• No risk flags detected for this line.</div>'}
+    `;
+    addLog(`🔄 SIM Swap Verification for ${evalData.phoneNumber} (${evalData.telco}): Risk Score ${evalData.riskScore}/100`);
+  })
+  .catch(err => {
+    if (detailsBox) detailsBox.innerHTML = `<div style="color:var(--danger-red);">Error checking SIM swap risk: ${err.message}</div>`;
+  });
+}
+
 // --- Threat Intelligence Blacklist Handlers ---
 function searchBlacklist() {
   const query = document.getElementById('blacklistSearchInput')?.value || '';
@@ -561,6 +619,25 @@ function renderReportsPage(stat){
       </div>
     </div>`;
   }).join('');
+
+  // network operator breakdown comparison
+  const telcoStats = stat.telcoStats || {};
+  const mtn = telcoStats['MTN Mobile Money'] || { total: 0, high: 0 };
+  const telecel = telcoStats['Telecel Cash'] || { total: 0, high: 0 };
+  const at = telcoStats['AT Money'] || { total: 0, high: 0 };
+
+  const mtnPct = mtn.total ? Math.round((mtn.high / mtn.total) * 100) : 0;
+  const telecelPct = telecel.total ? Math.round((telecel.high / telecel.total) * 100) : 0;
+  const atPct = at.total ? Math.round((at.high / at.total) * 100) : 0;
+
+  if (document.getElementById('mtnStatsCount')) document.getElementById('mtnStatsCount').textContent = `${mtn.total} txns`;
+  if (document.getElementById('mtnStatsHigh')) document.getElementById('mtnStatsHigh').textContent = `${mtn.high} High Risk (${mtnPct}%)`;
+
+  if (document.getElementById('telecelStatsCount')) document.getElementById('telecelStatsCount').textContent = `${telecel.total} txns`;
+  if (document.getElementById('telecelStatsHigh')) document.getElementById('telecelStatsHigh').textContent = `${telecel.high} High Risk (${telecelPct}%)`;
+
+  if (document.getElementById('atStatsCount')) document.getElementById('atStatsCount').textContent = `${at.total} txns`;
+  if (document.getElementById('atStatsHigh')) document.getElementById('atStatsHigh').textContent = `${at.high} High Risk (${atPct}%)`;
 }
 
 

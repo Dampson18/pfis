@@ -63,6 +63,58 @@
       </div>
     </div>
 
+    <!-- SIM Swap Risk Verification Tool -->
+    <div class="card mb-20" style="border-top: 3px solid var(--danger-red);">
+      <div class="card-header" style="background:#f8fafc;">
+        <h3>🔄 SIM Swap & Mobile Money Account Takeover Verifier</h3>
+        <span class="badge badge-high">High Security Hurdle</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--gov-muted);margin-bottom:14px;">
+          Verify if a subscriber phone number has experienced a recent SIM swap, IMSI change, or tower location anomaly before authorizing high-value MoMo USSD transfers.
+        </p>
+        <div style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
+          <div>
+            <div class="form-group">
+              <label class="form-label">Telco Network</label>
+              <select class="form-control" id="simTelcoSelect">
+                <option value="MTN">MTN Mobile Money</option>
+                <option value="TELECEL">Telecel Cash</option>
+                <option value="AT">AT Money</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subscriber Phone Number</label>
+              <input type="text" class="form-control" id="simPhoneInput" placeholder="e.g. 0244112233" value="0244112233">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">SIM Swap Age (Hours)</label>
+                <input type="number" class="form-control" id="simAgeInput" value="12" placeholder="e.g. 12">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Anomalies Detected</label>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:12px;">
+                  <label><input type="checkbox" id="simImsiCheck" checked> IMSI Changed</label>
+                  <label><input type="checkbox" id="simLocCheck" checked> Tower Location Mismatch</label>
+                  <label><input type="checkbox" id="simImeiCheck"> New Device IMEI</label>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="verifySimSwapRisk()">🔒 Run SIM Swap Verification</button>
+          </div>
+
+          <div>
+            <div id="simResultBox" style="background:var(--gov-silver);border:1px solid var(--gov-border);padding:16px;border-radius:2px;height:100%;">
+              <div style="font-weight:700;color:var(--gov-navy);margin-bottom:8px;font-size:14px;">SIM Swap Risk Analysis</div>
+              <div class="text-muted text-small" id="simResultPlaceholder">Click <strong>"Run SIM Swap Verification"</strong> to evaluate SIM swap age and device anomalies.</div>
+              <div id="simResultDetails" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card"><div class="label">Total Transactions</div><div class="value" id="st-total">0</div><div class="sub">This session</div></div>

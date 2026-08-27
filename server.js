@@ -213,6 +213,55 @@ function analyzeCashoutPrompt(agentId, amount, subscriberNumber, telco = "MTN") 
   };
 }
 
+// Function to verify SIM Swap & Account Takeover Risk
+function analyzeSimSwapRisk(phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch, deviceImeiChanged, telco = "MTN") {
+  let riskScore = 0;
+  const flags = [];
+  const hours = Number(simSwapAgeHours) || 999;
+
+  if (hours <= 24) {
+    riskScore += 50;
+    flags.push(`Critical SIM Swap Window: SIM swapped ${hours} hours ago (Under 24h risk window)`);
+  } else if (hours <= 72) {
+    riskScore += 35;
+    flags.push(`Recent SIM Swap Alert: SIM swapped ${hours} hours ago (Under 72h risk window)`);
+  }
+
+  if (Boolean(imsiChanged)) {
+    riskScore += 25;
+    flags.push("IMSI Change Detected (Sub-level SIM replacement)");
+  }
+
+  if (Boolean(locationMismatch)) {
+    riskScore += 15;
+    flags.push("Cell Tower Geolocation Mismatch during financial attempt");
+  }
+
+  if (Boolean(deviceImeiChanged)) {
+    riskScore += 10;
+    flags.push("New Hardware Device IMEI registered alongside SIM swap");
+  }
+
+  const telcoObj = TELCOS.find(t => t.id === telco) || TELCOS[0];
+  const riskLevel = riskScore <= 25 ? 'safe' : riskScore <= 55 ? 'moderate' : 'high';
+  const blockRecommended = riskScore >= 55;
+
+  return {
+    phoneNumber: phoneNumber || "Unknown Mobile Number",
+    telco: telcoObj.name,
+    simSwapAgeHours: hours,
+    riskScore: Math.min(100, riskScore),
+    riskLevel,
+    blockRecommended,
+    flags,
+    recommendation: blockRecommended
+      ? "🚨 CRITICAL SIM SWAP TAKEOVER RISK: Freeze high-value USSD transfers & request biometric / in-person operator verification!"
+      : riskLevel === 'moderate'
+      ? "⚠ MODERATE RISK: Step-up authentication (OTP or Security Question) required before processing MoMo transfer."
+      : "✅ SIM INTEGRITY PASSED: No suspicious SIM swap activity recorded."
+  };
+}
+
 let transactions = [];
 let investigations = [];
 let running = false;
@@ -352,6 +401,19 @@ app.post('/api/v1/telco/verify-sms', (req, res) => {
   });
 });
 
+app.post('/api/v1/telco/verify-sim-swap', (req, res) => {
+  const { phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch, deviceImeiChanged, telco } = req.body;
+  if (!phoneNumber) {
+    return res.status(400).json({ error: "Phone number is required for SIM swap risk check." });
+  }
+  const result = analyzeSimSwapRisk(phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch, deviceImeiChanged, telco || "MTN");
+  res.json({
+    status: "success",
+    timestamp: new Date().toISOString(),
+    evaluation: result
+  });
+});
+
 app.post('/api/v1/telco/verify-cashout', (req, res) => {
   const { agentId, amount, subscriberNumber, telco } = req.body;
   const result = analyzeCashoutPrompt(agentId, amount, subscriberNumber, telco || "MTN");
@@ -384,7 +446,14 @@ app.post('/api/v1/threats/report', (req, res) => {
   const existing = BLACKLIST_DATABASE.find(item => item.value === value);
   if (existing) {
     existing.reportsCount += 1;
-    return res.json({ message: "Existing threat record updated with additional report.", record: existing });
+    if (existing.reportsCount >= 3) {
+      existing.risk = "CRITICAL";
+      existing.autoBlocked = true;
+    }
+    return res.json({
+      message: `Existing threat record updated. Report count: ${existing.reportsCount}. Status: ${existing.risk} (Cross-operator auto-blocked).`,
+      record: existing
+    });
   }
   const newThreat = {
     id: `BLK-GH-00${BLACKLIST_DATABASE.length + 1}`,
@@ -394,6 +463,7 @@ app.post('/api/v1/threats/report', (req, res) => {
     reportedBy: reportedBy || "MoMo Subscriber / FIC",
     reportsCount: 1,
     risk: "HIGH",
+    autoBlocked: false,
     date: new Date().toISOString().split('T')[0]
   };
   BLACKLIST_DATABASE.unshift(newThreat);
@@ -474,6 +544,44 @@ app.get('/api/monitor', (req, res) => {
   res.json(transactions.slice(0,40));
 });
 
+app.get('/api/v1/reports/export', (req, res) => {
+  const format = (req.query.format || "json").toLowerCase();
+  const telcoFilter = req.query.telco || "ALL";
+
+  let filteredTxns = transactions;
+  if (telcoFilter !== "ALL") {
+    filteredTxns = transactions.filter(t => t.telcoCode === telcoFilter || t.telco.includes(telcoFilter));
+  }
+
+  if (format === "csv") {
+    const headers = ["Transaction_ID", "Timestamp", "Customer", "Telco", "Amount_GHS", "Risk_Score", "Risk_Level", "Status", "Fraud_Category"];
+    const rows = filteredTxns.map(t => [
+      t.id,
+      t.ts ? new Date(t.ts).toISOString() : "",
+      `"${t.profile ? t.profile.name : 'Unknown'}"`,
+      `"${t.telco || ''}"`,
+      t.amount ? t.amount.toFixed(2) : "0.00",
+      t.score || 0,
+      t.risk || "unknown",
+      t.status || "processed",
+      `"${t.fraudType || 'Standard'}"`
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename=Ghana_Telco_Fraud_Report_${telcoFilter}_${Date.now()}.csv`);
+    return res.send(csvContent);
+  }
+
+  res.json({
+    status: "success",
+    exportedAt: new Date().toISOString(),
+    telcoFilter,
+    count: filteredTxns.length,
+    transactions: filteredTxns
+  });
+});
+
 app.get('/api/reports', (req, res) => {
   const total = transactions.length;
   const safe = transactions.filter(t=>t.risk==='safe').length;
@@ -508,11 +616,16 @@ app.get('/api/reports', (req, res) => {
     });
   });
 
-  // network breakdown
-  const telcoStats = { 'MTN Mobile Money': 0, 'Telecel Cash': 0, 'AT Money': 0 };
+  // network breakdown & risk comparison
+  const telcoStats = {
+    'MTN Mobile Money': { total: 0, high: 0 },
+    'Telecel Cash': { total: 0, high: 0 },
+    'AT Money': { total: 0, high: 0 }
+  };
   transactions.forEach(t => {
-    if (t.telco && telcoStats[t.telco] !== undefined) {
-      telcoStats[t.telco]++;
+    if (t.telco && telcoStats[t.telco]) {
+      telcoStats[t.telco].total++;
+      if (t.risk === 'high') telcoStats[t.telco].high++;
     }
   });
 
