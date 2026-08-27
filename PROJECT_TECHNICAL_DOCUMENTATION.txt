@@ -1,0 +1,668 @@
+PFIS TECHNICAL DOCUMENTATION
+============================
+Predictive Fraud Intelligence System
+Version context: PFIS v2.4.1
+
+
+1. PURPOSE AND PRODUCT SCOPE
+----------------------------
+PFIS is a telecom fraud operations application for Ghana's mobile money ecosystem.
+It is designed for operator analysts, fraud investigators, contact-centre teams and
+technical integration teams.
+
+The current product demonstrates these workflows:
+
+- Verify suspicious mobile money SMS messages before approving a reversal.
+- Evaluate possible SIM-swap account takeover activity.
+- Evaluate unsolicited agent cash-out prompts.
+- Generate and classify simulated mobile money transactions.
+- Apply weighted fraud hurdles to transactions.
+- Place high-risk transactions into an investigation queue.
+- Search and report shared threat-intelligence records.
+- Review reports and export transaction data as JSON or CSV.
+- Configure transaction-risk thresholds and simulation frequency.
+- Present a buyer-facing Pilot Brief with live operational metrics.
+
+The application currently contains demonstration data and a simulated transaction
+engine. It is a product prototype and integration foundation, not a production
+telecom decisioning system until the limitations in Section 16 are addressed.
+
+
+2. TECHNOLOGY STACK
+-------------------
+Runtime:
+- Node.js.
+- CommonJS modules using require() and module.exports.
+
+Backend:
+- Express 4.18.2 HTTP framework.
+- express-session 1.19.0 session middleware.
+- bcryptjs 3.0.3 password hashing and verification.
+- sqlite3 6.0.1 SQLite database driver.
+- EJS 3.1.9 server-side HTML templating.
+
+Frontend:
+- Server-rendered EJS pages.
+- Vanilla browser JavaScript in public/js/app.js.
+- Shared CSS in public/css/style.css.
+- Google Fonts: EB Garamond and Source Sans 3.
+- No frontend framework or build step is currently required.
+
+Deployment:
+- Vercel Node builder using @vercel/node.
+- Vercel routing is defined in vercel.json.
+
+Development tools:
+- nodemon 3.1.14 for automatic server restart.
+- npm scripts are defined in package.json.
+
+
+3. REPOSITORY STRUCTURE
+------------------------
+server.js
+  Main Express application. Defines middleware, authentication, fraud analyzers,
+  transaction simulation, API endpoints, HTML routes, and local server startup.
+
+db.js
+  SQLite connection, schema creation, seed records, and Promise-based database
+  helper functions.
+
+pfis.db
+  SQLite database file used by db.js. It contains users, profiles, transactions,
+  investigations and threat-blacklist records. It is a local state file and should
+  not be treated as a scalable production database.
+
+data/pfis-store.json
+  Small JSON settings store. server.js reads settings at startup and writes the
+  configured thresholds and transaction interval. Transaction records are stored
+  in SQLite, not in this JSON file.
+
+public/css/style.css
+  Global visual system, layouts, navigation, forms, cards, badges, tables,
+  responsive behavior and Pilot Brief print styles.
+
+public/js/app.js
+  Client-side page behavior, API calls, dashboard updates, engine controls,
+  fraud-tool result rendering, charts, reports and navigation interactions.
+
+views/
+  EJS templates. partials/header.ejs contains the document header, navigation and
+  live ticker. partials/footer.ejs contains the footer and app.js script include.
+
+views/pilot-brief.ejs
+  Buyer-facing operational summary with live metrics and print support.
+
+PFIS.html
+  Legacy static single-page snapshot. It is not used by the Express routes.
+
+vercel.json
+  Vercel build and catch-all route configuration.
+
+README.md
+  Short setup and feature overview.
+
+nodemon.json
+  Tells nodemon to ignore data/* and server.log.
+
+
+4. APPLICATION STARTUP
+----------------------
+The local development command is:
+
+  npm install
+  npm run dev
+
+The dev script runs:
+
+  nodemon server.js
+
+The normal start command is:
+
+  npm start
+
+which runs node server.js.
+
+At startup server.js:
+
+1. Imports Express, filesystem utilities, sessions, bcrypt and db.js.
+2. Loads data/pfis-store.json if it exists. If it cannot be read, it uses an empty
+   settings object.
+3. Configures EJS views and Express JSON/urlencoded body parsing.
+4. Serves files from public/.
+5. Configures express-session with an eight-hour cookie.
+6. Applies authentication middleware to protected paths.
+7. Loads constants for operators, devices, locations, recipients and sender IDs.
+8. Creates the SQLite-backed transaction engine.
+9. Starts the simulation engine locally unless VERCEL is set.
+10. Registers all API and HTML routes.
+11. Starts an HTTP listener locally unless VERCEL is set.
+12. Exports the Express app for Vercel.
+
+PORT defaults to 3000 and can be overridden:
+
+  PORT=3010 npm start
+
+The Vercel environment check is important. Serverless functions must export a
+request handler rather than open a persistent listener, and they must not start a
+long-running interval on every invocation.
+
+
+5. REQUEST AND AUTHENTICATION FLOW
+-----------------------------------
+Every request receives express-session middleware. The session stores the logged-in
+user under req.session.user. The user object includes:
+
+- id
+- username
+- name
+- role
+- telco
+
+The global authentication middleware allows these paths without login:
+
+- /login
+- /accessibility
+- /contact
+- /help
+- /about
+- /api/v1/telco/*
+- /css/*
+- /js/*
+
+Other paths require a session. Browser requests are redirected to /login when they
+are unauthenticated. API requests receive HTTP 401 JSON instead.
+
+The login POST endpoint looks up the username in SQLite and compares the submitted
+password with password_hash using bcryptjs. Successful login returns JSON containing
+success, redirect and the session user.
+
+Seeded demonstration accounts are currently created by db.js:
+
+- admin / admin123
+- officer_mtn / analyst123
+- officer_telecel / analyst123
+- officer_at / analyst123
+
+The login page has a guided demo button that submits the administrator credentials.
+These credentials are suitable only for a disposable demonstration environment and
+must be removed or replaced before production deployment.
+
+Logout is available through both GET /logout and POST /logout.
+
+
+6. DATABASE DESIGN
+-------------------
+db.js opens pfis.db using sqlite3 and creates tables if they do not exist.
+
+users:
+- id: integer primary key.
+- username: unique login name.
+- password_hash: bcrypt hash.
+- name: display name.
+- role: authorization role.
+- telco: operator scope, such as MTN, TELECEL, AT or ALL.
+
+profiles:
+- id, name, type, sub, avg, hours, device, location and initials.
+- Used as behavioral baselines for simulated transaction generation.
+- hours is stored as a comma-separated string such as 8,18.
+
+transactions:
+- id: unique transaction identifier.
+- ts: ISO timestamp.
+- profile_id and profile_name: associated customer profile.
+- telco and telcoCode: network identity.
+- amount: transaction amount.
+- device, location and recipient: observed transaction attributes.
+- fraudType: selected fraud category.
+- mlScamProbability: numeric model score representation.
+- score: weighted risk score from 0 to 100.
+- risk: safe, moderate or high.
+- status: approved, monitoring or blocked.
+- confirmed: nullable operator confirmation value.
+- hurdles: JSON-encoded hurdle array.
+
+investigations:
+- id, txnId, account, telco, amount, reason, ts, priority and status.
+- High-risk generated transactions create open investigation records.
+
+threat_blacklist:
+- id, type, value, reason, reportedBy, reportsCount, risk, autoBlocked and date.
+- Threat reports are shared logically across the supported operator networks.
+- A repeated value is escalated to CRITICAL and autoBlocked after three reports.
+
+Database helpers expose Promise wrappers around sqlite3 callbacks and provide user,
+profile, transaction, investigation and threat-intelligence operations.
+
+
+7. FRAUD ANALYSIS ENGINE
+-------------------------
+7.1 SMS classification
+
+classifySmsWithNaiveBayes() tokenizes the submitted SMS by:
+
+1. Converting text to lowercase.
+2. Replacing non-alphanumeric characters with spaces.
+3. Splitting into tokens.
+4. Looking up each token in scam and legitimate-message vocabularies.
+5. Adding logarithmic weighted values to scam and ham log probabilities.
+6. Applying a sender adjustment. An unrecognized sender receives a scam multiplier;
+   an official sender receives a ham multiplier.
+7. Using a numerically stable two-class softmax calculation.
+8. Returning scam probability, confidence percentage, prediction and top features.
+
+This is a deterministic weighted classifier, not a trained external machine-learning
+service. The UI labels it as a Naive Bayes and anomaly model.
+
+7.2 SMS hurdle scoring
+
+analyzeSmsPayload() applies four checks:
+
+- Official sender ID: 30 points when the sender is not recognized.
+- Ledger/reference match: 25 points when a credit claim lacks a transaction reference.
+- ML probability: up to 25 points based on scam probability.
+- SMS balance/footer format: 20 points when a credit claim lacks expected balance
+  or mobile-money formatting.
+
+Risk levels are:
+
+- safe: score 0 through 30.
+- moderate: score 31 through 65.
+- high: score above 65.
+
+The message is marked fake when the sender is not official, the score exceeds 50,
+or scam probability exceeds 0.60.
+
+7.3 Cash-out prompt analysis
+
+analyzeCashoutPrompt() checks:
+
+- Agent ID format: AG- followed by four to six digits, or a five/six digit code.
+- Amount above GHS 500.
+
+Risk weights are 40 points for an unrecognized agent and 30 points for a high
+amount. A risk score of at least 40 marks the prompt as unsolicited.
+
+7.4 SIM-swap analysis
+
+analyzeSimSwapRisk() checks:
+
+- SIM swap age at or below 24 hours: 50 points.
+- SIM swap age between 25 and 72 hours: 35 points.
+- IMSI change: 25 points.
+- Tower location mismatch: 15 points.
+- New device IMEI: 10 points.
+
+A score of at least 55 recommends blocking. Risk levels are safe through 25,
+moderate through 55, and high above 55.
+
+7.5 Simulated transaction scoring
+
+The local engine selects a seeded profile and operator, then randomly creates these
+signals:
+
+- Device anomaly.
+- Activity outside the normal time window.
+- Amount anomaly.
+- Location anomaly.
+- New or unknown recipient.
+- SIM swap.
+- Fake SMS.
+- Unsolicited cash-out prompt.
+- Fake loan or promotion scam.
+
+Eight weighted hurdles are evaluated:
+
+- Device identity delta: 20.
+- Amount versus historical baseline: 25.
+- Time-of-day entropy: 15.
+- Geolocation consistency: 15.
+- Known beneficiary wallet: 15.
+- SIM integrity: 30.
+- SMS payload integrity: 35.
+- Agent cash-out validation: 25.
+
+The total is capped at 100. Thresholds are configurable; the defaults are safe at
+40 and moderate at 70. The resulting status is approved, monitoring or blocked.
+High-risk transactions create investigation records.
+
+The engine generates one transaction immediately and then every 2,800 milliseconds
+when running locally. It uses SQLite for transaction and investigation inserts.
+
+
+8. HTTP API REFERENCE
+----------------------
+Public telco verification endpoints:
+
+POST /api/v1/telco/verify-sms
+Body: { smsText, senderId, telco }
+Returns: { status, timestamp, evaluation }
+Requires smsText. The evaluation contains score, risk level, fake-SMS decision,
+model output, hurdles and recommendation.
+
+POST /api/v1/telco/verify-sim-swap
+Body: { phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch,
+deviceImeiChanged, telco }
+Requires phoneNumber. Returns a SIM-swap evaluation.
+
+POST /api/v1/telco/verify-cashout
+Body: { agentId, amount, subscriberNumber, telco }
+Returns a cash-out prompt evaluation.
+
+Threat-intelligence endpoints:
+
+GET /api/v1/threats/search?q=value
+Returns all threats when q is absent, otherwise filters value, reason and reporter.
+
+POST /api/v1/threats/report
+Body: { type, value, reason, reportedBy }
+Requires value and reason. Inserts a threat or increments an existing report count.
+Three reports escalate the threat to CRITICAL and auto-blocked.
+
+Model endpoint:
+
+GET /api/v1/ml/metrics
+Returns the displayed model name, accuracy, precision, recall, F1 score, dataset
+size, training date, confusion matrix and top scam tokens. These are currently
+static demonstration metrics and should not be presented as independently audited
+production performance.
+
+Legacy compatibility endpoint:
+
+POST /api/analyze-sms
+Body: { smsText, senderId, telco }
+Returns the SMS evaluation directly without the outer status/timestamp wrapper.
+
+Authenticated datastore endpoints:
+
+GET /api/telcos
+Returns supported operator definitions.
+
+GET /api/transactions
+Returns up to 200 newest SQLite transactions, with JSON hurdles parsed.
+
+GET /api/profiles
+Returns seeded profiles with hours converted to an array of numbers.
+
+GET /api/investigations
+Returns investigation records ordered by timestamp.
+
+POST /api/investigations
+Body fields may include txnId, account, telco, amount, reason and priority.
+Creates an open investigation with server-generated ID and timestamp.
+
+GET /api/monitor
+Returns up to 40 newest transactions for the live monitor.
+
+POST /api/engine
+Body: { action: "start" } or { action: "stop" }
+Starts or stops the local simulation engine and returns its running state.
+
+GET /api/reports
+Returns total, safe, moderate, high, blocked value, hurdle statistics and operator
+statistics from up to 500 newest transactions.
+
+GET /api/v1/reports/export?format=json&telco=ALL
+Returns filtered transaction data as JSON. format=csv returns a downloadable CSV.
+
+GET /api/settings
+Returns threshSafe, threshMod and txnInterval.
+
+POST /api/settings
+Body may contain numeric threshSafe, threshMod and txnInterval values. Values are
+updated in memory and written to data/pfis-store.json.
+
+
+9. WEB PAGE REFERENCE
+----------------------
+/login
+  Officer login and guided demo entry.
+
+/
+  Command dashboard with fraud verification tools, live metrics, charts, threat
+  intelligence, recent high-risk events and activity log.
+
+/monitor
+  Live transaction feed and operator monitoring controls.
+
+/transactions
+  Transaction history, filtering, transaction details and export actions.
+
+/profiles
+  Customer behavioral profiles used by the risk engine.
+
+/investigations
+  Open and review investigation cases.
+
+/reports
+  Session summaries, operator comparison, model metrics and report generation.
+
+/pilot-brief
+  Protected buyer-facing summary with live metrics, pilot value propositions,
+  integration readiness and browser print/save-to-PDF support.
+
+/settings
+  Risk thresholds, simulation frequency and system controls.
+
+/about, /accessibility, /contact, /help
+  Public informational and support pages.
+
+
+10. FRONTEND BEHAVIOR
+----------------------
+The shared header marks the active engine state and exposes navigation. The footer
+loads public/js/app.js on every page.
+
+The dashboard uses the SMS, SIM-swap and cash-out controls to call the public telco
+verification APIs and renders returned hurdle results into the page. Sample buttons
+populate scam and authentic SMS examples.
+
+The dashboard and monitor use polling and API calls to refresh transaction data. The
+client renders risk badges, charts, recent activity and the investigation badge.
+
+The Pilot Brief fetches /api/reports after page load, formats total events, high-risk
+events, blocked value and high-risk percentage, and displays fallback styling if the
+metrics request fails. Its Print / Save Brief button invokes window.print().
+
+The login demo button fills admin/admin123 and submits the existing login form. This
+is convenient for sales demonstrations but must not remain in an exposed production
+tenant with default credentials.
+
+
+11. VERCEL DEPLOYMENT
+----------------------
+vercel.json configures:
+
+- Vercel configuration version 2.
+- @vercel/node build for server.js.
+- A catch-all route from /(.*) to server.js.
+
+server.js exports app with module.exports = app. When VERCEL is set:
+
+- app.listen() is skipped.
+- The recurring simulation engine is skipped.
+- JSON persistence errors are swallowed because the deployment filesystem is not a
+  durable writable datastore.
+
+A typical deployment flow is:
+
+1. Push the repository to GitHub.
+2. Import the repository into Vercel.
+3. Set the project root to the repository root.
+4. Let Vercel install package.json dependencies.
+5. Deploy and inspect function logs if a request fails.
+6. Configure a durable external database before accepting real telecom data.
+
+
+12. LOCAL DEVELOPMENT TROUBLESHOOTING
+--------------------------------------
+If port 3000 is already used:
+
+  PORT=3010 npm run dev
+
+If nodemon reports that the application crashed, run:
+
+  node --check server.js
+  node --check public/js/app.js
+  npm start
+
+The development engine writes to SQLite. If database errors occur, inspect pfis.db,
+confirm that dependencies are installed, and ensure the database directory is
+writable.
+
+Do not open PFIS.html directly when testing API-backed functionality. Use the
+Express server so relative API requests, EJS routes and sessions work correctly.
+
+
+13. SECURITY MODEL AND REQUIRED HARDENING
+------------------------------------------
+Current protections:
+
+- Passwords are hashed with bcryptjs in SQLite.
+- Protected pages and most APIs require a session.
+- Public webhook-style verification APIs are isolated under /api/v1/telco/.
+- SQL calls use parameter arrays for user-provided values.
+- JSON request parsing is enabled.
+
+Before production:
+
+- Replace the hard-coded session secret with a strong environment variable.
+- Replace express-session MemoryStore with a shared production session store.
+- Replace default accounts and remove demo credentials from the UI.
+- Add rate limiting, request size limits, CSRF protection and security headers.
+- Validate and normalize every request field, especially phone numbers, agent IDs,
+  telco identifiers, numeric thresholds and report values.
+- Add role-based authorization for administrative settings and investigation actions.
+- Protect public webhook endpoints with signed requests, API keys or mTLS.
+- Encrypt sensitive data in transit and at rest.
+- Add audit records for login, rule changes, analyst decisions and exports.
+- Avoid exposing raw personal data in logs and CSV exports.
+- Add dependency scanning and regular package updates.
+
+
+14. DATA AND PRIVACY CONSIDERATIONS
+------------------------------------
+The application models phone numbers, subscriber identities, transaction details,
+locations, device information and fraud decisions. These are sensitive operational
+and potentially personal data.
+
+A production implementation should define:
+
+- Data retention periods.
+- Purpose limitation for each signal.
+- Operator and analyst access boundaries.
+- Data-subject and incident handling procedures.
+- Redaction rules for logs and reports.
+- Encryption and key-management ownership.
+- Database backup, restore and disaster-recovery procedures.
+- Cross-operator sharing agreements for threat intelligence.
+
+The seeded records are synthetic demonstration data. The application must not be
+connected to live customer data without the appropriate legal, security and operator
+controls.
+
+
+15. COMMERCIAL PILOT MODEL
+---------------------------
+The Pilot Brief positions PFIS for a controlled 30-day operator pilot. A practical
+pilot can measure:
+
+- Number of events evaluated.
+- Number and value of high-risk events held for review.
+- Confirmed fraud rate.
+- False-positive rate.
+- Analyst handling time per case.
+- Time from signal to decision.
+- SMS verification volume and decision consistency.
+- Number of shared threat reports and repeat detections.
+- Availability and latency of verification APIs.
+
+A pilot should begin with one signal source and a defined review policy. It should
+use synthetic or approved masked data, compare PFIS decisions with existing analyst
+outcomes, and agree on success criteria before production integration.
+
+
+16. KNOWN LIMITATIONS AND PRODUCTION GAPS
+------------------------------------------
+1. SQLite is local-file storage. Vercel serverless instances are ephemeral and do
+   not provide a durable shared SQLite filesystem. Use PostgreSQL, managed SQLite,
+   or another external datastore for production.
+
+2. The local transaction engine is intentionally disabled on Vercel. A production
+   event pipeline should receive signed operator events instead of relying on a
+   background interval.
+
+3. express-session uses the default in-memory store. Sessions are not reliable across
+   multiple serverless instances and can disappear between requests.
+
+4. The ML model is a hand-weighted vocabulary classifier. Its displayed accuracy
+   and dataset claims are demonstration values, not a model-governance artifact.
+
+5. SIM-swap, ledger and sender verification data are simulated or locally derived.
+   Real integrations require authoritative operator systems.
+
+6. Default credentials are seeded automatically for demonstration.
+
+7. Threshold updates are not yet persisted in the primary SQLite configuration model
+   and are not scoped by operator or role.
+
+8. There is no complete automated test suite. Production readiness requires unit,
+   integration, security, load and browser workflow tests.
+
+9. CSV export needs stronger escaping and authorization review before sensitive data
+   is exported to users.
+
+10. The application does not yet provide a full tenant model, billing system,
+    onboarding workflow, SLA monitoring or managed alert delivery.
+
+
+17. RECOMMENDED IMPLEMENTATION ROADMAP
+---------------------------------------
+Phase 1: Pilot hardening
+- Move sessions to Redis or a managed session service.
+- Move operational data to a managed relational database.
+- Store secrets and operator configuration in environment variables.
+- Add structured logs, health checks and automated tests.
+- Remove default production credentials.
+
+Phase 2: Operator integration
+- Add signed webhook ingestion for transaction and SMS events.
+- Add idempotency keys and replay protection.
+- Add operator-specific sender registries and fraud rules.
+- Add asynchronous job processing for high-volume events.
+- Add analyst feedback capture for confirmed fraud and false positives.
+
+Phase 3: Enterprise operations
+- Add tenant and role-based access control.
+- Add audit trails and immutable decision records.
+- Add alert routing through approved operator channels.
+- Add model versioning, training lineage and performance monitoring.
+- Add dashboards for loss prevented, latency, precision and analyst workload.
+- Add billing, onboarding, documentation and support workflows.
+
+
+18. QUICK REFERENCE COMMANDS
+-----------------------------
+Install dependencies:
+  npm install
+
+Run production-style local server:
+  npm start
+
+Run development server with nodemon:
+  npm run dev
+
+Run on an alternate port:
+  PORT=3010 npm run dev
+
+Check backend syntax:
+  node --check server.js
+
+Check frontend syntax:
+  node --check public/js/app.js
+
+Check Vercel-compatible module loading:
+  VERCEL=1 node -e "const app=require('./server'); if(typeof app !== 'function') process.exit(1); console.log('serverless app loaded')"
+
+
+END OF DOCUMENTATION
