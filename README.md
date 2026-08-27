@@ -70,17 +70,5 @@ The following endpoints are available:
 
 These can be replaced by database-backed logic or secured with authentication as your project grows.
 
-## Removing Bank of Ghana references
 
 PFIS is positioned as a telecom operator fraud operations product for MTN, AirtelTigo and Telecel. Banking and government-agency claims are intentionally excluded from the served product.
-
-## Next steps
-
-- Flesh out each view with real content or components
-- Wire up client-side code in `public/js/app.js` to call the backend endpoints
-- Add authentication/authorization to the Express server
-- Replace placeholder data with a datastore (MongoDB, PostgreSQL, etc.)
-
----
-
-This upgrade provides a foundation for building out PFIS as a modular web application rather than a monolithic HTML page.
