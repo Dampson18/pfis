@@ -50,6 +50,9 @@ PFIS/                     # project root
 - **Live Monitor** – live feed of recent transactions with filtering controls and counts.
 - **Transactions** – history listing, fetches from `/api/transactions` and supports risk/status filters as well as CSV export.
 - **User Profiles**, **Investigations**, **Reports**, **Settings**, **About PFIS** – fully fleshed out versions of the original UI. Reports and Settings pages dynamically pull data from extended APIs; Settings includes a tabbed menu.
+- **Pilot Brief** – buyer-facing summary of live impact metrics, integration readiness and a recommended 30-day operator pilot. It can be printed or saved as a PDF from the browser.
+
+The login page includes a guided demo button that signs into the seeded administrator account for product walkthroughs.
 
 All pages share the same header and footer partials and the global stylesheet.
 

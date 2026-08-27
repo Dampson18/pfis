@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div class="container">
+    <div>
+      <div class="breadcrumb">PFIS &rsaquo; <span>Pilot Brief</span></div>
+      <h2>Operator Pilot Brief</h2>
+      <p>A concise view of detection coverage, operational impact and the path to a controlled pilot.</p>
+    </div>
+    <button class="btn btn-gold" onclick="window.print()">Print / Save Brief</button>
+  </div>
+</div>
+
+<main class="container page-content pilot-brief">
+  <section class="pilot-hero">
+    <div>
+      <span class="eyebrow">PFIS NETWORK SHIELD</span>
+      <h1>Move from suspicious signal to operator action.</h1>
+      <p>PFIS combines transaction anomalies, SIM-swap indicators, fake SMS verification and shared threat intelligence in one workspace for telecom risk teams.</p>
+    </div>
+    <div class="pilot-hero-mark"><strong>3</strong><span>operator networks<br/>in one view</span></div>
+  </section>
+
+  <section class="pilot-metrics" aria-label="Pilot performance metrics">
+    <div class="stat-card"><div class="label">Events evaluated</div><div class="value" id="briefTotal">—</div><div class="sub">Live datastore volume</div></div>
+    <div class="stat-card red"><div class="label">High-risk events</div><div class="value" id="briefHigh">—</div><div class="sub">Sent to review or block</div></div>
+    <div class="stat-card gold"><div class="label">Value held</div><div class="value" id="briefSaved">—</div><div class="sub">Blocked transaction value</div></div>
+    <div class="stat-card green"><div class="label">Detection rate</div><div class="value" id="briefRate">—</div><div class="sub">High-risk share of events</div></div>
+  </section>
+
+  <div class="grid-2 pilot-grid">
+    <section class="card">
+      <div class="card-header"><h3>What a pilot proves</h3><span class="badge badge-navy">30 days</span></div>
+      <div class="card-body pilot-list">
+        <div><strong>Earlier intervention</strong><span>Surface suspicious value before a reversal, cash-out or transfer is approved.</span></div>
+        <div><strong>Consistent analyst decisions</strong><span>Explain every decision through weighted hurdles and an auditable case queue.</span></div>
+        <div><strong>Cross-network intelligence</strong><span>Share reported numbers, agent IDs and scam patterns across participating operators.</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Ready for integration</h3><span class="badge badge-safe">API enabled</span></div>
+      <div class="card-body pilot-list">
+        <div><strong>Webhook verification</strong><span>POST SMS and cash-out signals to the versioned telco verification API.</span></div>
+        <div><strong>Operator controls</strong><span>Configure risk thresholds, review queues and network-specific access.</span></div>
+        <div><strong>Evidence on demand</strong><span>Export filtered transaction reports for operations, compliance and incident review.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card pilot-next-step">
+    <div class="card-body">
+      <div><span class="eyebrow">RECOMMENDED NEXT STEP</span><h3>Run a controlled operator pilot</h3><p>Connect one signal source, define review thresholds with the risk team, and measure prevented loss, analyst handling time and confirmed fraud outcomes.</p></div>
+      <div class="btn-group"><a class="btn btn-primary" href="/monitor">Open live monitor</a><a class="btn btn-outline" href="/reports">View analytics</a></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(async () => {
+  try {
+    const response = await fetch('/api/reports');
+    if (!response.ok) throw new Error('Metrics unavailable');
+    const data = await response.json();
+    document.getElementById('briefTotal').textContent = data.total.toLocaleString();
+    document.getElementById('briefHigh').textContent = data.high.toLocaleString();
+    document.getElementById('briefSaved').textContent = `₵${Number(data.saved || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('briefRate').textContent = data.total ? `${Math.round((data.high / data.total) * 100)}%` : '—';
+  } catch (error) {
+    document.querySelector('.pilot-metrics').classList.add('is-unavailable');
+  }
+})();
+</script>
+
+<%- include('partials/footer') %>

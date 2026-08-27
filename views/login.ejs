@@ -24,6 +24,9 @@
       <button class="btn btn-primary" type="submit" style="width: 100%; padding: 10px; font-weight: 600;">
         Sign In to Portal
       </button>
+      <button class="btn btn-outline" type="button" id="demoLoginButton" style="width: 100%; margin-top: 10px; padding: 10px; font-weight: 600;">
+        Launch five-minute product demo
+      </button>
     </form>
 
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-muted);">
@@ -65,6 +68,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     errDiv.textContent = 'Server connection error. Please try again.';
     errDiv.style.display = 'block';
   }
+});
+</script>
+
+<script>
+document.getElementById('demoLoginButton').addEventListener('click', () => {
+  document.getElementById('loginUsername').value = 'admin';
+  document.getElementById('loginPassword').value = 'admin123';
+  document.getElementById('loginForm').requestSubmit();
 });
 </script>
 

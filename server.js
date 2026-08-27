@@ -348,7 +348,7 @@ async function createTxn() {
     const amount = unusual.amount ? profile.avg * rand(4, 12) : profile.avg * (rand(70, 130) / 100);
     const device = unusual.device ? DEVICES[rand(6, 8)] : profile.device;
     const location = unusual.location ? LOCATIONS[rand(8, 9)] : LOCATIONS[rand(0, 5)];
-    const recipient = unusual.recipient ? RECIPIENTS[rand(5, 8)] : RECIPIENTS[rand(0, 4)];
+    const recipient = unusual.recipient ? RECIPIENTS[rand(5, RECIPIENTS.length - 1)] : RECIPIENTS[rand(0, 4)];
 
     const hurdles = [
       { name: "Device Identity Delta", passed: !unusual.device, weight: 20 },
@@ -725,6 +725,7 @@ app.get('/transactions', (req, res) => res.render('transactions'));
 app.get('/profiles', (req, res) => res.render('profiles'));
 app.get('/investigations', (req, res) => res.render('investigations'));
 app.get('/reports', (req, res) => res.render('reports'));
+app.get('/pilot-brief', (req, res) => res.render('pilot-brief'));
 app.get('/settings', (req, res) => res.render('settings'));
 app.get('/accessibility', (req, res) => res.render('accessibility'));
 app.get('/contact', (req, res) => res.render('contact'));
