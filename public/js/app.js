@@ -110,6 +110,64 @@ function loadSampleLegitSms() {
   if (textInput) textInput.value = 'Payment received for GHS 450.00 from Ama Boateng. Current balance: GHS 1250.00. Available balance: GHS 1250.00. Reference: TXN-PFIS-MOMO99.';
 }
 
+// --- SIM Swap Risk Check Handler ---
+function verifySimSwapRisk() {
+  const telco = document.getElementById('simTelcoSelect')?.value || 'MTN';
+  const phoneNumber = document.getElementById('simPhoneInput')?.value || '';
+  const simSwapAgeHours = Number(document.getElementById('simAgeInput')?.value || 999);
+  const imsiChanged = document.getElementById('simImsiCheck')?.checked || false;
+  const locationMismatch = document.getElementById('simLocCheck')?.checked || false;
+  const deviceImeiChanged = document.getElementById('simImeiCheck')?.checked || false;
+
+  if (!phoneNumber.trim()) {
+    alert('Please enter a phone number for SIM swap verification.');
+    return;
+  }
+
+  const placeholder = document.getElementById('simResultPlaceholder');
+  const detailsBox = document.getElementById('simResultDetails');
+  if (placeholder) placeholder.style.display = 'none';
+  if (detailsBox) {
+    detailsBox.style.display = 'block';
+    detailsBox.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gov-navy);">⌛ Querying telco SIM registry for ${phoneNumber}...</div>`;
+  }
+
+  fetch('/api/v1/telco/verify-sim-swap', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber, simSwapAgeHours, imsiChanged, locationMismatch, deviceImeiChanged, telco })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!detailsBox) return;
+    const evalData = data.evaluation;
+    const badgeColor = evalData.blockRecommended ? 'var(--danger-red)' : evalData.riskLevel === 'moderate' ? 'var(--warn-amber)' : 'var(--safe-green)';
+    const badgeBg = evalData.blockRecommended ? 'var(--danger-bg)' : evalData.riskLevel === 'moderate' ? 'var(--warn-bg)' : 'var(--safe-bg)';
+
+    let flagsHtml = (evalData.flags || []).map(f => `
+      <div style="padding:4px 8px;background:#fff;border:1px solid #e2e8f0;margin-bottom:4px;font-size:11px;color:var(--danger-red);">
+        • ${f}
+      </div>
+    `).join('');
+
+    detailsBox.innerHTML = `
+      <div style="background:${badgeBg};border:1px solid ${badgeColor};padding:12px;border-radius:2px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-weight:700;color:${badgeColor};font-size:13px;">${evalData.riskLevel.toUpperCase()} RISK</span>
+          <span class="badge" style="background:${badgeColor};color:#fff;">Score: ${evalData.riskScore}/100</span>
+        </div>
+        <div style="font-size:12px;color:#1a202c;line-height:1.4;">${evalData.recommendation}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--gov-navy);margin-bottom:4px;">Detected Risk Indicators:</div>
+      ${flagsHtml || '<div style="font-size:11px;color:var(--safe-green);">• No risk flags detected for this line.</div>'}
+    `;
+    addLog(`🔄 SIM Swap Verification for ${evalData.phoneNumber} (${evalData.telco}): Risk Score ${evalData.riskScore}/100`);
+  })
+  .catch(err => {
+    if (detailsBox) detailsBox.innerHTML = `<div style="color:var(--danger-red);">Error checking SIM swap risk: ${err.message}</div>`;
+  });
+}
+
 // --- Threat Intelligence Blacklist Handlers ---
 function searchBlacklist() {
   const query = document.getElementById('blacklistSearchInput')?.value || '';
@@ -379,18 +437,72 @@ function renderTransactionsPage(data){
 }
 
 function renderProfilesPage(data){
-  const container = document.getElementById('profileContainer');
+  const container = document.getElementById('profileCards') || document.getElementById('profileContainer');
   if(!container) return;
-  container.innerHTML = data.map(p=>{
-    return `<div class="card"><div class="card-body"><h4>${p.name}</h4><p>${p.type} — ${p.sub}</p><p style="font-size:11px;color:#555;">${p.id}</p></div></div>`;
-  }).join('');
+  if(!data.length) {
+    container.innerHTML = '<p>No user profiles available.</p>';
+    return;
+  }
+  container.innerHTML = data.map(p => `
+    <div class="card">
+      <div class="card-body" style="padding:18px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--gov-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">
+            ${p.initials || p.name.split(' ').map(n=>n[0]).join('')}
+          </div>
+          <div>
+            <h4 style="margin:0;font-size:16px;color:var(--gov-navy);">${p.name}</h4>
+            <div style="font-size:12px;color:var(--gov-muted);">${p.type} — ${p.sub}</div>
+            <span class="badge badge-navy" style="font-size:10px;margin-top:2px;">ID: ${p.id}</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--gov-silver);padding:10px;border-radius:2px;font-size:12px;">
+          <div><span style="color:var(--gov-muted);">Baseline Avg:</span> <strong style="color:var(--gov-navy);">${fmt(p.avg)}</strong></div>
+          <div><span style="color:var(--gov-muted);">Active Hours:</span> <strong>${Array.isArray(p.hours) ? p.hours.join(':00–') + ':00' : p.hours}</strong></div>
+          <div><span style="color:var(--gov-muted);">Primary Device:</span> <strong>${p.device}</strong></div>
+          <div><span style="color:var(--gov-muted);">Primary Location:</span> <strong>${p.location}</strong></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderInvestPage(data){
-  const container = document.getElementById('investContainer');
-  if(!container) return;
-  if(!data.length){ container.innerHTML='<p>No investigations logged.</p>'; return; }
-  container.innerHTML = `<ul>${data.map(i=>`<li>${i.id} &ndash; ${i.account} &ndash; ${fmt(i.amount)} &ndash; ${i.status}</li>`).join('')}</ul>`;
+  const openCount = data.filter(i => i.status === 'Open').length;
+  const resolvedCount = data.filter(i => i.status === 'Resolved' || i.status === 'Closed').length;
+  if(document.getElementById('inv-open')) document.getElementById('inv-open').textContent = openCount;
+  if(document.getElementById('inv-resolved')) document.getElementById('inv-resolved').textContent = resolvedCount;
+
+  const tbody = document.getElementById('invBody');
+  if(!tbody) return;
+  if(!data.length){
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gov-muted);padding:32px;">No cases in queue. High-risk transactions will appear here automatically.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(i => `
+    <tr>
+      <td style="font-family:monospace;font-weight:700;">${i.id}</td>
+      <td style="font-family:monospace;font-size:11px;">${i.txnId}</td>
+      <td><strong>${i.account}</strong> <span class="badge badge-navy" style="font-size:10px;">${i.telco || 'MTN'}</span></td>
+      <td>${fmt(i.amount)}</td>
+      <td style="font-size:11px;color:var(--danger-red);">${i.reason}</td>
+      <td style="font-size:11px;">${new Date(i.ts).toLocaleString('en-GH')}</td>
+      <td><span class="badge badge-${i.priority === 'High' ? 'high' : 'moderate'}">${i.priority}</span></td>
+      <td><span class="badge badge-${i.status === 'Open' ? 'high' : 'safe'}">${i.status}</span></td>
+      <td>
+        ${i.status === 'Open' ? `<button class="btn btn-outline btn-sm" onclick="resolveCase('${i.id}')">Resolve Case</button>` : `<span style="font-size:11px;color:var(--safe-green);font-weight:600;">✓ Resolved</span>`}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function resolveCase(id) {
+  addLog(`✅ Investigation Case ${id} resolved by operator.`);
+  alert(`Investigation Case ${id} marked as resolved.`);
+  fetch('/api/investigations').then(r => r.json()).then(data => {
+    const updated = data.map(i => i.id === id ? { ...i, status: 'Resolved' } : i);
+    renderInvestPage(updated);
+  });
 }
 
 function renderMonitorPage(data){
@@ -565,6 +677,25 @@ function renderReportsPage(stat){
       </div>
     </div>`;
   }).join('');
+
+  // network operator breakdown comparison
+  const telcoStats = stat.telcoStats || {};
+  const mtn = telcoStats['MTN Mobile Money'] || { total: 0, high: 0 };
+  const telecel = telcoStats['Telecel Cash'] || { total: 0, high: 0 };
+  const at = telcoStats['AT Money'] || { total: 0, high: 0 };
+
+  const mtnPct = mtn.total ? Math.round((mtn.high / mtn.total) * 100) : 0;
+  const telecelPct = telecel.total ? Math.round((telecel.high / telecel.total) * 100) : 0;
+  const atPct = at.total ? Math.round((at.high / at.total) * 100) : 0;
+
+  if (document.getElementById('mtnStatsCount')) document.getElementById('mtnStatsCount').textContent = `${mtn.total} txns`;
+  if (document.getElementById('mtnStatsHigh')) document.getElementById('mtnStatsHigh').textContent = `${mtn.high} High Risk (${mtnPct}%)`;
+
+  if (document.getElementById('telecelStatsCount')) document.getElementById('telecelStatsCount').textContent = `${telecel.total} txns`;
+  if (document.getElementById('telecelStatsHigh')) document.getElementById('telecelStatsHigh').textContent = `${telecel.high} High Risk (${telecelPct}%)`;
+
+  if (document.getElementById('atStatsCount')) document.getElementById('atStatsCount').textContent = `${at.total} txns`;
+  if (document.getElementById('atStatsHigh')) document.getElementById('atStatsHigh').textContent = `${at.high} High Risk (${atPct}%)`;
 }
 
 
@@ -710,7 +841,9 @@ function showSettings(id,el){
   if(el) el.classList.add('active');
 }
 function generateReport(){
-  alert('Report download is not implemented in this demo.');
+  const telco = document.getElementById('txnTelcoFilter')?.value || 'ALL';
+  window.location.href = `/api/v1/reports/export?format=csv&telco=${encodeURIComponent(telco)}`;
+  addLog('📄 Official Ghana Telco Fraud Report generated and downloaded.');
 }
 
 function saveThresholds(){

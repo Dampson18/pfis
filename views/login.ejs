@@ -1,12 +1,71 @@
 <%- include('partials/header') %>
 
-<div class="container page-content">
-  <h2>Officer Login</h2>
-  <form id="loginForm" style="max-width:320px;margin-top:20px;">
-    <div class="form-group"><label class="form-label">Username</label><input class="form-control" type="text" /></div>
-    <div class="form-group"><label class="form-label">Password</label><input class="form-control" type="password" /></div>
-    <button class="btn btn-primary" type="submit">Sign in</button>
-  </form>
+<div class="container page-content" style="max-width: 480px; margin-top: 40px;">
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">🔐</div>
+      <h2 style="margin: 0; color: var(--navy-dark); font-size: 1.5rem;">PFIS Officer Login</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
+        Ghana Telcos Surveillance & Fraud Prevention Network
+      </p>
+    </div>
+
+    <div id="loginError" style="display: none; background: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 10px 14px; border-radius: 6px; font-size: 0.88rem; margin-bottom: 16px;"></div>
+
+    <form id="loginForm">
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" style="font-weight: 600;">Username</label>
+        <input id="loginUsername" name="username" class="form-control" type="text" placeholder="e.g. admin or officer_mtn" required />
+      </div>
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label class="form-label" style="font-weight: 600;">Password</label>
+        <input id="loginPassword" name="password" class="form-control" type="password" placeholder="••••••••" required />
+      </div>
+      <button class="btn btn-primary" type="submit" style="width: 100%; padding: 10px; font-weight: 600;">
+        Sign In to Portal
+      </button>
+    </form>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-muted);">
+      <strong>Demo System Accounts:</strong>
+      <ul style="margin: 6px 0 0 18px; padding: 0;">
+        <li><code>admin</code> / <code>admin123</code> (System Administrator)</li>
+        <li><code>officer_mtn</code> / <code>analyst123</code> (MTN Mobile Money Officer)</li>
+        <li><code>officer_telecel</code> / <code>analyst123</code> (Telecel Cash Officer)</li>
+        <li><code>officer_at</code> / <code>analyst123</code> (AT Money Specialist)</li>
+      </ul>
+    </div>
+  </div>
 </div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value;
+  const password = document.getElementById('loginPassword').value;
+  const errDiv = document.getElementById('loginError');
+
+  errDiv.style.display = 'none';
+
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      window.location.href = data.redirect || '/';
+    } else {
+      errDiv.textContent = data.error || 'Invalid credentials. Please check your username and password.';
+      errDiv.style.display = 'block';
+    }
+  } catch (err) {
+    errDiv.textContent = 'Server connection error. Please try again.';
+    errDiv.style.display = 'block';
+  }
+});
+</script>
 
 <%- include('partials/footer') %>
