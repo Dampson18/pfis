@@ -10,7 +10,6 @@
 <body>
 
 <!-- FLAG STRIP -->
-<link rel="stylesheet" href="/css/style.css"/>
 <div class="flag-strip"></div>
 
 <!-- TOP BANNER -->
@@ -21,7 +20,12 @@
       <a href="/accessibility">Accessibility</a>
       <a href="/contact">Contact</a>
       <a href="/help">Help Centre</a>
-      <a href="/login" id="loginLink">Officer Login</a>
+      <% if (locals.user) { %>
+        <span style="color: #fbbf24; font-weight: 600; margin-right: 8px;">👤 <%= locals.user.name %> (<%= locals.user.role %>)</span>
+        <a href="/logout" style="color: #f87171; font-weight: 600;">Logout</a>
+      <% } else { %>
+        <a href="/login" id="loginLink">Officer Login</a>
+      <% } %>
     </div>
   </div>
 </div>
