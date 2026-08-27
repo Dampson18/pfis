@@ -310,7 +310,7 @@ let BLACKLIST_DATABASE = [];
 function saveStore(){
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ transactions, investigations, threats: BLACKLIST_DATABASE, settings: { txnInterval, threshSafe, threshMod } }, null, 2));
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ settings: { txnInterval, threshSafe, threshMod } }, null, 2));
   } catch (error) {
     if (!process.env.VERCEL) throw error;
   }
