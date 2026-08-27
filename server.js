@@ -6,6 +6,8 @@ const db = require('./db.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DATA_DIR = path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'pfis-store.json');
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -71,8 +73,6 @@ const RECIPIENTS = [
   "AT Money #0277-XXX-405",
   "MTN MoMo #0551-XXX-902",
   "Telecel Cash #0503-XXX-334",
-  "GCB Acct #1003-XXX-01",
-  "Ecobank #0038-XXX-92",
   "Unknown MoMo Wallet #0599-XXX-000",
   "Unverified Agent #0240-XXX-777"
 ];
@@ -292,6 +292,14 @@ let running = false;
 let engineInterval = null;
 let txnInterval = 2800;
 let threshSafe = 40, threshMod = 70;
+if (store.settings) ({ txnInterval, threshSafe, threshMod } = { txnInterval, threshSafe, threshMod, ...store.settings });
+
+let BLACKLIST_DATABASE = [];
+
+function saveStore(){
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(DATA_FILE, JSON.stringify({ transactions, investigations, threats: BLACKLIST_DATABASE, settings: { txnInterval, threshSafe, threshMod } }, null, 2));
+}
 
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function uid(){return 'TXN-PFIS-'+Date.now().toString(36).toUpperCase();}
@@ -387,6 +395,7 @@ async function createTxn() {
   } catch (err) {
     console.error('Error generating transaction:', err);
   }
+  saveStore();
 }
 
 function startEngine() {

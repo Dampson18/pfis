@@ -3,3 +3,6 @@ server_output.log
 node_modules/
 pfis.db*
 cookies.txt
+data/pfis-store.json
+server.log
+node_modules/
