@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -8,6 +9,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'pfis-store.json');
+
+function loadStore() {
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  } catch (error) {
+    return { settings: {} };
+  }
+}
+
+const store = loadStore();
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -297,8 +308,12 @@ if (store.settings) ({ txnInterval, threshSafe, threshMod } = { txnInterval, thr
 let BLACKLIST_DATABASE = [];
 
 function saveStore(){
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ transactions, investigations, threats: BLACKLIST_DATABASE, settings: { txnInterval, threshSafe, threshMod } }, null, 2));
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ transactions, investigations, threats: BLACKLIST_DATABASE, settings: { txnInterval, threshSafe, threshMod } }, null, 2));
+  } catch (error) {
+    if (!process.env.VERCEL) throw error;
+  }
 }
 
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
@@ -405,8 +420,7 @@ function startEngine() {
   engineInterval = setInterval(createTxn, txnInterval);
 }
 
-// Start simulation engine on boot
-setTimeout(startEngine, 1000);
+if (!process.env.VERCEL) startEngine();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTHENTICATION & LOGIN ROUTES
@@ -807,6 +821,10 @@ app.post('/api/settings', (req, res) => {
   res.json({ threshSafe, threshMod, txnInterval });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
