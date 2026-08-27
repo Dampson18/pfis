@@ -55,7 +55,7 @@ All pages share the same header and footer partials and the global stylesheet.
 
 ## Backend API
 
-The server now maintains an in-memory simulation of user profiles, transactions and investigations, and the "engine" auto‑generates suspicious transactions on startup.
+The server uses a persistent local JSON datastore in `data/pfis-store.json` for transactions, investigations, threat reports and settings. Demo mode generates Ghana telecom events on startup; a production deployment should replace the demo generator with signed operator webhooks or a managed database.
 
 The following endpoints are available:
 
@@ -69,7 +69,7 @@ These can be replaced by database-backed logic or secured with authentication as
 
 ## Removing Bank of Ghana references
 
-All visible text has been stripped of "Bank of Ghana", reflecting that PFIS is an independent FIC project. Legacy file `PFIS.html` has also been updated and marked as legacy.
+PFIS is positioned as a telecom operator fraud operations product for MTN, AirtelTigo and Telecel. Banking and government-agency claims are intentionally excluded from the served product.
 
 ## Next steps
 

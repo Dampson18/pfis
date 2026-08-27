@@ -5,7 +5,7 @@
       <div>
         <div class="breadcrumb">PFIS &rsaquo; <span>Dashboard</span></div>
         <h2>Command Dashboard</h2>
-        <p>Real-time overview of Ghana's financial fraud prevention network</p>
+        <p>Real-time command view for Ghana's mobile money fraud operations</p>
       </div>
       <div style="text-align:right;font-size:12px;color:#7a92b0;" id="dashTime"></div>
     </div>
@@ -14,26 +14,26 @@
     
     <!-- Engine offline notice -->
     <div class="notice" id="engineNotice">
-      ⚠ <strong>Engine Offline:</strong> The PFIS monitoring engine is not active. Click <strong>"Activate Engine"</strong> above to begin real-time transaction surveillance.
+      ⚠ <strong>Demo feed paused:</strong> Activate the engine to preview live operator events and risk decisions.
     </div>
 
     <!-- Telecom Fraud & Fake SMS Scam Analyzer Section -->
     <div class="card mb-20" style="border-top: 3px solid var(--gov-navy);">
       <div class="card-header" style="background:#f8fafc;">
-        <h3>📱 Telecom Anti-Fraud & Fake SMS Alert Checker</h3>
+        <h3>📱 Verify a Mobile Money Alert</h3>
         <span class="badge badge-navy">Ghana Telco Protection (MTN / Telecel / AT)</span>
       </div>
       <div class="card-body">
         <p style="font-size:13px;color:var(--gov-muted);margin-bottom:14px;">
-          Received a suspicious SMS message claiming money was sent to your MoMo or Telecel/AT wallet? Test any transaction SMS payload or sender ID to verify if it is an authentic credit notification or a fake SMS fraud attempt.
+          Check a customer complaint or contact-centre escalation against sender identity, transaction reference, message structure and the PFIS risk model before approving a reversal.
         </p>
-        <div style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
+        <div class="dashboard-analyzer" style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
           <div>
             <div class="form-group">
               <label class="form-label">Telecom Network</label>
               <select class="form-control" id="smsTelcoSelect">
                 <option value="MTN">MTN Mobile Money (MoMo)</option>
-                <option value="TELECEL">Telecel Cash (formerly Vodafone Cash)</option>
+                <option value="TELECEL">Telecel Cash</option>
                 <option value="AT">AT Money (AirtelTigo Money)</option>
               </select>
             </div>
@@ -46,7 +46,7 @@
               <textarea class="form-control" id="smsTextInput" rows="4" placeholder="Paste the SMS text here... e.g. Payment received for GHS 850.00 from Kwame Mensah. Txn ID: TXN987123. Current balance: GHS 1250.00"></textarea>
             </div>
             <div class="btn-group">
-              <button class="btn btn-primary" onclick="checkSmsScam()">🔍 Analyze SMS Risk Factor</button>
+              <button class="btn btn-primary" onclick="checkSmsScam()">🔍 Run Alert Verification</button>
               <button class="btn btn-outline" onclick="loadSampleScamSms()">Load Sample Scam SMS</button>
               <button class="btn btn-outline" onclick="loadSampleLegitSms()">Load Sample Authentic SMS</button>
             </div>
@@ -65,11 +65,11 @@
 
     <!-- STATS -->
     <div class="stats-grid">
-      <div class="stat-card"><div class="label">Total Transactions</div><div class="value" id="st-total">0</div><div class="sub">This session</div></div>
+      <div class="stat-card"><div class="label">Events Evaluated</div><div class="value" id="st-total">0</div><div class="sub">Current demo feed</div></div>
       <div class="stat-card green"><div class="label">Safe Transactions</div><div class="value" id="st-safe">0</div><div class="sub">Score 0–40</div></div>
       <div class="stat-card amber"><div class="label">Moderate Risk</div><div class="value" id="st-mod">0</div><div class="sub">Score 41–70, monitoring</div></div>
       <div class="stat-card red"><div class="label">High Risk / Blocked</div><div class="value" id="st-high">0</div><div class="sub">Score 71–100, flagged</div></div>
-      <div class="stat-card gold"><div class="label">Funds Protected</div><div class="value" id="st-saved" style="font-size:20px;">₵0.00</div><div class="sub">Fraud cancelled</div></div>
+      <div class="stat-card gold"><div class="label">Value Held for Review</div><div class="value" id="st-saved" style="font-size:20px;">₵0.00</div><div class="sub">Blocked or cancelled</div></div>
       <div class="stat-card"><div class="label">Detection Rate</div><div class="value" id="st-rate">—</div><div class="sub">High risk caught</div></div>
     </div>
 
@@ -112,7 +112,7 @@
     <!-- Shared Telco Scammer Blacklist & Threat Intelligence Widget -->
     <div class="card mb-20">
       <div class="card-header" style="background:#f8fafc;">
-        <h3>🚨 Shared Ghana Telco Threat Intelligence & Scammer Blacklist</h3>
+        <h3>🚨 Shared Telco Threat Intelligence</h3>
         <span class="badge badge-high">Cross-Operator Protection</span>
       </div>
       <div class="card-body">
@@ -147,7 +147,7 @@
                 <option>SIM Swap Takeover Attempt</option>
               </select>
             </div>
-            <button class="btn btn-danger btn-sm" style="width:100%;" onclick="reportScammer()">+ Report to All Ghana Telcos</button>
+            <button class="btn btn-danger btn-sm" style="width:100%;" onclick="reportScammer()">+ Share with Operator Network</button>
           </div>
         </div>
       </div>

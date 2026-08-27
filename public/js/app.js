@@ -21,7 +21,7 @@ const PROFILES = [
 ];
 const DEVICES = ["Samsung Galaxy A54","iPhone 13","Tecno Spark 10","Xiaomi Redmi 12","Samsung Galaxy A32","Tecno Camon 20","Unknown Android Device","New iPhone","Unregistered Tablet"];
 const LOCATIONS = ["Accra","Kumasi","Takoradi","Tamale","Cape Coast","Sunyani","Ho","Bolgatanga","Unknown Location","International IP"];
-const RECIPIENTS = ["MTN MoMo #0244-XXX","Vodafone Cash #0205-XXX","AirtelTigo #0277-XXX","GCB Acct #1003-XXX","Ecobank #0038-XXX","New Recipient","Unknown Account","International Wire"];
+const RECIPIENTS = ["MTN MoMo #0244-XXX","Telecel Cash #0205-XXX","AirtelTigo Money #0277-XXX","New Recipient","Unknown MoMo Wallet","Unverified Agent"];
 
 let transactions = [], investigations = [], running = false, engineInterval = null;
 let txnInterval = 2800;
@@ -47,12 +47,16 @@ function checkSmsScam() {
     resDetails.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gov-navy);">⌛ Analyzing SMS text against ${telco} mobile money fraud database...</div>`;
   }
 
-  fetch('/api/analyze-sms', {
+  fetch('/api/v1/telco/verify-sms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ smsText, senderId, telco })
   })
-  .then(res => res.json())
+  .then(async res => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
+    return data.evaluation || data;
+  })
   .then(data => {
     if (!resDetails) return;
     const badgeBg = data.isFakeSms ? 'var(--danger-bg)' : data.riskLevel === 'moderate' ? 'var(--warn-bg)' : 'var(--safe-bg)';
@@ -84,7 +88,7 @@ function checkSmsScam() {
     addLog(`📱 SMS Fraud Check executed (${data.targetTelco}): Sender ID "${data.senderId}", Risk Score ${data.score}/100`);
   })
   .catch(err => {
-    if (resDetails) resDetails.innerHTML = `<div style="color:var(--danger-red);">Error analyzing SMS: ${err.message}</div>`;
+    if (resDetails) resDetails.innerHTML = `<div style="color:var(--danger-red);"><strong>Analysis unavailable.</strong><br>${err.message}. Make sure PFIS is opened through <strong>http://localhost:3000</strong>, not as a local HTML file.</div>`;
   });
 }
 
@@ -186,7 +190,7 @@ function submitCase() {
   .then(inv => {
     addLog(`📁 Investigation Case Created: ${inv.id}`);
     closeModal('reportModal');
-    alert(`Case ${inv.id} filed successfully with Financial Intelligence Centre.`);
+    alert(`Case ${inv.id} filed successfully for operator review.`);
     if (window.location.pathname === '/investigations') {
       fetch('/api/investigations').then(r => r.json()).then(renderInvestPage);
     }

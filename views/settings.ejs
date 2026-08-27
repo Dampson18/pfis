@@ -30,7 +30,7 @@
         <div class="card">
           <div class="card-header"><h3>Risk Score Thresholds</h3></div>
           <div class="card-body">
-            <div class="notice">Changes to thresholds affect all future transaction evaluations. Consult the FIC before modifying.</div>
+            <div class="notice">Changes affect future evaluations across connected operator feeds. Test threshold changes against recent confirmed incidents before rollout.</div>
             <div class="form-group">
               <label class="form-label">Safe Threshold (Max Score)</label>
               <input type="number" class="form-control" id="thresh-safe" value="40" min="10" max="60" style="max-width:200px;">
@@ -49,7 +49,7 @@
             <div class="form-group">
               <label class="form-label">Transaction Interval (seconds)</label>
               <input type="number" class="form-control" id="txnInterval" value="2.8" min="0.5" max="10" step="0.5" style="max-width:200px;">
-              <div class="text-small text-muted mt-8">How frequently the engine generates simulated transactions.</div>
+              <div class="text-small text-muted mt-8">Demo mode refresh interval. Production deployments consume signed operator webhooks instead.</div>
             </div>
             <button class="btn btn-primary" onclick="saveThresholds()">Save Configuration</button>
           </div>
@@ -98,12 +98,12 @@
               <input class="form-control" value="https://api.mtn.com.gh/momo/v1/transactions" type="text">
             </div>
             <div class="form-group">
-              <label class="form-label">Vodafone Cash API Endpoint</label>
-              <input class="form-control" value="https://api.vodafone.com.gh/cash/v2/" type="text">
+              <label class="form-label">Telecel Cash API Endpoint</label>
+              <input class="form-control" value="https://api.telecel.com.gh/cash/v2/" type="text">
             </div>
             <div class="form-group">
-              <label class="form-label">GCB Core Banking API</label>
-              <input class="form-control" value="https://cbs.gcb.com.gh/api/pfis/" type="text">
+              <label class="form-label">Operator Event Webhook</label>
+              <input class="form-control" value="https://operator.example.com/pfis/events" type="text">
             </div>
             <div class="form-group">
               <label class="form-label">PFIS API Key (read-only)</label>

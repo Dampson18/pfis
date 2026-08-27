@@ -1,8 +1,11 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DATA_DIR = path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'pfis-store.json');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -33,8 +36,6 @@ const RECIPIENTS = [
   "AT Money #0277-XXX-405",
   "MTN MoMo #0551-XXX-902",
   "Telecel Cash #0503-XXX-334",
-  "GCB Acct #1003-XXX-01",
-  "Ecobank #0038-XXX-92",
   "Unknown MoMo Wallet #0599-XXX-000",
   "Unverified Agent #0240-XXX-777"
 ];
@@ -213,12 +214,26 @@ function analyzeCashoutPrompt(agentId, amount, subscriberNumber, telco = "MTN") 
   };
 }
 
-let transactions = [];
-let investigations = [];
+function loadStore(){
+  try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); }
+  catch (error) { return { transactions: [], investigations: [], threats: null, settings: null }; }
+}
+
+const store = loadStore();
+let transactions = store.transactions || [];
+let investigations = store.investigations || [];
 let running = false;
 let engineInterval = null;
 let txnInterval = 2800;
 let threshSafe = 40, threshMod = 70;
+if (store.settings) ({ txnInterval, threshSafe, threshMod } = { txnInterval, threshSafe, threshMod, ...store.settings });
+
+let BLACKLIST_DATABASE = [];
+
+function saveStore(){
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(DATA_FILE, JSON.stringify({ transactions, investigations, threats: BLACKLIST_DATABASE, settings: { txnInterval, threshSafe, threshMod } }, null, 2));
+}
 
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function uid(){return 'TXN-PFIS-'+Date.now().toString(36).toUpperCase();}
@@ -312,6 +327,7 @@ function createTxn(){
     };
     investigations.unshift(inv);
   }
+  saveStore();
 }
 
 function startEngine(){
@@ -328,12 +344,15 @@ startEngine();
 // SHARED TELCO THREAT INTELLIGENCE & SCAMMER BLACKLIST DATABASE
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BLACKLIST_DATABASE = [
+BLACKLIST_DATABASE = [
   { id: "BLK-GH-001", type: "Phone Number", value: "0244012999", reason: "Fake MoMo Reversal SMS Scam", reportedBy: "MTN Ghana", reportsCount: 18, risk: "HIGH", date: "2025-01-10" },
   { id: "BLK-GH-002", type: "Agent ID", value: "AG-998811", reason: "Unsolicited Agent Cashout Prompt Exploit", reportedBy: "Telecel Cash", reportsCount: 12, risk: "HIGH", date: "2025-01-14" },
   { id: "BLK-GH-003", type: "Phone Number", value: "0503991200", reason: "Fake Loan Approval Phishing", reportedBy: "AT Money", reportsCount: 9, risk: "HIGH", date: "2025-01-18" },
   { id: "BLK-GH-004", type: "Phone Number", value: "0277880011", reason: "Social Engineering Fraudster", reportedBy: "MTN Ghana", reportsCount: 24, risk: "CRITICAL", date: "2025-01-20" }
 ];
+if (store.threats && Array.isArray(store.threats)) {
+  BLACKLIST_DATABASE.splice(0, BLACKLIST_DATABASE.length, ...store.threats);
+}
 
 // API endpoints
 app.use(express.json());
@@ -384,6 +403,7 @@ app.post('/api/v1/threats/report', (req, res) => {
   const existing = BLACKLIST_DATABASE.find(item => item.value === value);
   if (existing) {
     existing.reportsCount += 1;
+    saveStore();
     return res.json({ message: "Existing threat record updated with additional report.", record: existing });
   }
   const newThreat = {
@@ -397,6 +417,7 @@ app.post('/api/v1/threats/report', (req, res) => {
     date: new Date().toISOString().split('T')[0]
   };
   BLACKLIST_DATABASE.unshift(newThreat);
+  saveStore();
   res.status(201).json({ message: "New threat reported and blacklisted across Ghana Telcos.", record: newThreat });
 });
 
@@ -443,6 +464,7 @@ app.get('/api/investigations', (req, res) => res.json(investigations));
 app.post('/api/investigations', (req, res) => {
   const inv = {id:caseId(),...req.body,ts:new Date(),status:'Open'};
   investigations.unshift(inv);
+  saveStore();
   res.status(201).json(inv);
 });
 
@@ -527,6 +549,7 @@ app.post('/api/settings', (req, res) => {
   if(typeof ts==='number') threshSafe=ts;
   if(typeof tm==='number') threshMod=tm;
   if(typeof ti==='number') txnInterval=ti;
+  saveStore();
   res.json({ threshSafe, threshMod, txnInterval });
 });
 
