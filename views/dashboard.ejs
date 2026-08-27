@@ -17,6 +17,52 @@
       ⚠ <strong>Engine Offline:</strong> The PFIS monitoring engine is not active. Click <strong>"Activate Engine"</strong> above to begin real-time transaction surveillance.
     </div>
 
+    <!-- Telecom Fraud & Fake SMS Scam Analyzer Section -->
+    <div class="card mb-20" style="border-top: 3px solid var(--gov-navy);">
+      <div class="card-header" style="background:#f8fafc;">
+        <h3>📱 Telecom Anti-Fraud & Fake SMS Alert Checker</h3>
+        <span class="badge badge-navy">Ghana Telco Protection (MTN / Telecel / AT)</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--gov-muted);margin-bottom:14px;">
+          Received a suspicious SMS message claiming money was sent to your MoMo or Telecel/AT wallet? Test any transaction SMS payload or sender ID to verify if it is an authentic credit notification or a fake SMS fraud attempt.
+        </p>
+        <div style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
+          <div>
+            <div class="form-group">
+              <label class="form-label">Telecom Network</label>
+              <select class="form-control" id="smsTelcoSelect">
+                <option value="MTN">MTN Mobile Money (MoMo)</option>
+                <option value="TELECEL">Telecel Cash (formerly Vodafone Cash)</option>
+                <option value="AT">AT Money (AirtelTigo Money)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sender ID or Phone Number</label>
+              <input type="text" class="form-control" id="smsSenderInput" placeholder="e.g., MobileMoney, 0244000111, TelecelCash, or ATMoney" value="0244987654">
+            </div>
+            <div class="form-group">
+              <label class="form-label">SMS Message Content</label>
+              <textarea class="form-control" id="smsTextInput" rows="4" placeholder="Paste the SMS text here... e.g. Payment received for GHS 850.00 from Kwame Mensah. Txn ID: TXN987123. Current balance: GHS 1250.00"></textarea>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="checkSmsScam()">🔍 Analyze SMS Risk Factor</button>
+              <button class="btn btn-outline" onclick="loadSampleScamSms()">Load Sample Scam SMS</button>
+              <button class="btn btn-outline" onclick="loadSampleLegitSms()">Load Sample Authentic SMS</button>
+            </div>
+          </div>
+
+          <div>
+            <div id="smsResultBox" style="background:var(--gov-silver);border:1px solid var(--gov-border);padding:16px;border-radius:2px;height:100%;">
+              <div style="font-weight:700;color:var(--gov-navy);margin-bottom:8px;font-size:14px;">Analysis Results & Risk Breakdown</div>
+              <div class="text-muted text-small" id="smsResultPlaceholder">Enter an SMS message on the left and click <strong>"Analyze SMS Risk Factor"</strong> to run real-time verification against Ghana telecom transaction ledgers.</div>
+              <div id="smsResultDetails" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card"><div class="label">Total Transactions</div><div class="value" id="st-total">0</div><div class="sub">This session</div></div>
@@ -52,13 +98,13 @@
     <!-- Recent High-Risk Transactions -->
     <div class="card">
       <div class="card-header">
-        <h3>Recent High-Risk Transactions</h3>
+        <h3>Recent High-Risk Telecom Transactions</h3>
         <button class="btn btn-outline btn-sm" onclick="window.location='/transactions'">View All →</button>
       </div>
       <div class="card-body" style="padding:0;">
         <table class="gov-table" id="dashHighTable">
-          <thead><tr><th>Ref No.</th><th>Customer</th><th>Amount</th><th>Risk Score</th><th>Flags</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="dashHighBody"><tr><td colspan="8" style="text-align:center;color:var(--gov-muted);padding:28px;">No high-risk transactions detected.</td></tr></tbody>
+          <thead><tr><th>Ref No.</th><th>Telco Network</th><th>Customer</th><th>Amount</th><th>Risk Score</th><th>Fraud Category</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="dashHighBody"><tr><td colspan="9" style="text-align:center;color:var(--gov-muted);padding:28px;">No high-risk transactions detected.</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -83,5 +129,19 @@
       </div>
     </div>
   </div>
+
+<!-- TRANSACTION DETAIL MODAL -->
+<div class="modal-overlay" id="txnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Transaction Detail</h3>
+      <button class="modal-close" onclick="closeModal('txnModal')">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-outline" onclick="closeModal('txnModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <%- include('partials/footer') %>

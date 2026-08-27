@@ -25,6 +25,13 @@
             <a class="sidebar-link" onclick="setMonFilter('high',this)">🚨 High Risk</a>
           </div>
           <div class="sidebar-section">
+            <h4>Filter by Telco Network</h4>
+            <a class="sidebar-link active-telco" onclick="setTelcoFilter('all',this)">All Telcos</a>
+            <a class="sidebar-link" onclick="setTelcoFilter('MTN',this)">💛 MTN Mobile Money</a>
+            <a class="sidebar-link" onclick="setTelcoFilter('TELECEL',this)">🔴 Telecel Cash</a>
+            <a class="sidebar-link" onclick="setTelcoFilter('AT',this)">🔵 AT Money</a>
+          </div>
+          <div class="sidebar-section">
             <h4>Filter by User Type</h4>
             <a class="sidebar-link active-type" onclick="setTypeFilter('all',this)">All Users</a>
             <a class="sidebar-link" onclick="setTypeFilter('Trader',this)">Traders</a>
@@ -51,5 +58,19 @@
       </div>
     </div>
   </div>
+
+<!-- TRANSACTION DETAIL MODAL -->
+<div class="modal-overlay" id="txnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Transaction Detail</h3>
+      <button class="modal-close" onclick="closeModal('txnModal')">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-outline" onclick="closeModal('txnModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <%- include('partials/footer') %>

@@ -25,6 +25,15 @@
             </select>
           </div>
           <div>
+            <label class="form-label" style="margin-bottom:3px;">Telco Network</label>
+            <select class="form-control" style="width:180px;" id="txnTelcoFilter" onchange="renderTxnTable()">
+              <option value="all">All Telcos</option>
+              <option value="MTN Mobile Money">MTN Mobile Money</option>
+              <option value="Telecel Cash">Telecel Cash</option>
+              <option value="AT Money">AT Money</option>
+            </select>
+          </div>
+          <div>
             <label class="form-label" style="margin-bottom:3px;">Status</label>
             <select class="form-control" style="width:160px;" id="txnStatusFilter" onchange="renderTxnTable()">
               <option value="all">All Statuses</option>
@@ -46,8 +55,8 @@
         <table class="gov-table" id="txnTable">
           <thead>
             <tr>
-              <th>Ref No.</th><th>Date/Time</th><th>Customer</th><th>Type</th>
-              <th>Amount (₵)</th><th>Recipient</th><th>Device</th><th>Location</th>
+              <th>Ref No.</th><th>Telco</th><th>Date/Time</th><th>Customer</th><th>Type</th>
+              <th>Amount (₵)</th><th>Recipient</th><th>Fraud Category</th>
               <th>Risk Score</th><th>Risk Level</th><th>Status</th><th>Action</th>
             </tr>
           </thead>
@@ -58,5 +67,19 @@
       </div>
     </div>
   </div>
+
+<!-- TRANSACTION DETAIL MODAL -->
+<div class="modal-overlay" id="txnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Transaction Detail</h3>
+      <button class="modal-close" onclick="closeModal('txnModal')">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-outline" onclick="closeModal('txnModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <%- include('partials/footer') %>
