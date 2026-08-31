@@ -1,23 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
-const fs = require('fs');
 
-const IS_VERCEL = Boolean(process.env.VERCEL);
-let DB_PATH = path.join(__dirname, 'pfis.db');
-
-if (IS_VERCEL) {
-  const tmpDbPath = path.join('/tmp', 'pfis.db');
-  if (!fs.existsSync(tmpDbPath) && fs.existsSync(DB_PATH)) {
-    try {
-      fs.copyFileSync(DB_PATH, tmpDbPath);
-    } catch (err) {
-      console.error('Failed to copy db to /tmp:', err);
-    }
-  }
-  DB_PATH = tmpDbPath;
-}
-
+const DB_PATH = path.join(__dirname, 'pfis.db');
 const db = new sqlite3.Database(DB_PATH);
 
 db.serialize(() => {

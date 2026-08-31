@@ -7,8 +7,7 @@ const db = require('./db.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const IS_VERCEL = Boolean(process.env.VERCEL);
-const DATA_DIR = IS_VERCEL ? '/tmp' : path.join(__dirname, 'data');
+const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'pfis-store.json');
 
 function loadStore() {
@@ -310,12 +309,10 @@ let BLACKLIST_DATABASE = [];
 
 function saveStore(){
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
+    fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify({ settings: { txnInterval, threshSafe, threshMod } }, null, 2));
   } catch (error) {
-    console.error('saveStore warning:', error.message);
+    if (!process.env.VERCEL) throw error;
   }
 }
 
